@@ -14,13 +14,12 @@ void insert_sort(int* array, int length)
 	assert(array && length >= 0);
 
 	int i, j, temp;
-	for (i = 1; i < length; i++)
-	{
+
+	for (i = 1; i < length; i++) {
 		temp = array[i];
 		j = i - 1;
 
-		while (temp < array[j]) 
-		{
+		while (temp < array[j]) {
 			array[j + 1] = array[j];
 			--j;
 		}
@@ -45,19 +44,16 @@ void shell_sort(int* array, int length)
 	int i, j , temp;
 	int increment = length;
 
-	do 
-	{
+	do {
 		increment = increment / 3 + 1;
 
 		// 希尔排序中的一趟排序，increment 为当前增量
 		// 将 [increment, length - 1] 之间的元素分别插入各组当前的有序区
-		for (i = increment; i < length; i++)
-		{
+		for (i = increment; i < length; i++) {
 			temp = array[i];
 			j = i - increment;
 
-			while (j >= 0 && temp < array[j]) 
-			{
+			while (j >= 0 && temp < array[j]) {
 				array[j + increment] = array[j];
 				j -= increment;
 			}
@@ -84,14 +80,12 @@ void bubble_sort(int* array, int length)
 	
 	int i, j, temp;
 	bool exchange;
-	for (i = 1; i < length; i++)
-	{
+
+	for (i = 1; i < length; i++) {
 		exchange = false;
 
-		for (j = length - 1; j >= i; j--)
-		{
-			if (array[j] < array[j - 1])
-			{
+		for (j = length - 1; j >= i; j--) {
+			if (array[j] < array[j - 1]) {
 				temp = array[j];
 				array[j] = array[j - 1];
 				array[j - 1] = temp;
@@ -124,14 +118,12 @@ void bubble_sort_opt(int* array, int length)
 	int i, j, temp;
 	bool exchange;
 	int lastExchange = 1;
-	for (i = 1; i < length;)
-	{
+
+	for (i = 1; i < length;) {
 		exchange = false;
 
-		for (j = length - 1; j >= i; j--)
-		{
-			if (array[j] < array[j - 1])
-			{
+		for (j = length - 1; j >= i; j--) {
+			if (array[j] < array[j - 1]) {
 				temp = array[j];
 				array[j] = array[j - 1];
 				array[j - 1] = temp;
@@ -168,8 +160,8 @@ int quick_partition(int* array, int low, int high)
 	assert(array && low >= 0 && low <= high);
 
 	int pivot = array[low]; // 用区间的第 1 个记录作为基准
-	while (low < high)
-	{
+
+	while (low < high) {
 		while (low < high && array[high] >= pivot) {
 			--high;
 		}
@@ -194,8 +186,7 @@ int quick_partition(int* array, int low, int high)
 
 void quick_sort_impl(int* array, int low, int high)
 {
-	if (low < high)
-	{
+	if (low < high) {
 		int pivotPos = quick_partition(array, low, high);
 		quick_sort_impl(array, low, pivotPos - 1);
 		quick_sort_impl(array, pivotPos + 1, high);
@@ -212,3 +203,4 @@ void quick_sort(int* array, int length)
 
 	quick_sort_impl( array, 0, length - 1);
 }
+
