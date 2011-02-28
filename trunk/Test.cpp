@@ -1,8 +1,7 @@
 // Test.cpp : Defines the entry point for the console application.
 //
 
-#include <stdlib.h>
-#include <stdio.h>
+#include "stdafx.h"
 #include <assert.h>
 #include "SortAlgorithms.h"
 
@@ -30,14 +29,14 @@ void test(sort_function func)
 	//int array[length] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 	//int array[length] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
 	
-	print_array(array, length, "original: ");
+	print_array(array, length, " original: ");
 	
 	func(array, length);
 
-	print_array(array, length, "  sorted: ");
+	print_array(array, length, " sorted: ");
 }
 
-int main(int argc, const char* argv[])
+int _tmain(int argc, _TCHAR* argv[])
 {
 	printf("\n=== insert sort ===\n");
 	test(insert_sort);
@@ -53,6 +52,12 @@ int main(int argc, const char* argv[])
 
 	printf("\n=== quick sort ===\n");
 	test(quick_sort);
+
+	printf("\n=== straight selection sort ===\n");
+	test(select_sort);
+
+	printf("\n=== heap sort ===\n");
+	test(heap_sort);
 
 	getchar();
 	return 0;
