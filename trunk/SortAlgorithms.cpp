@@ -461,17 +461,112 @@ void merge_sort_dc(int* array, int length)
 
 /**
 * 算法名称	 ：箱/桶排序
-* 算法描述	 ：
+* 算法描述	 ：将长度为 N 待排序序列划分成 M 个的子区间（桶）；然后基于
+*              某种映射函数，将待排序列的关键字 k 映射到第 i 个桶中（即桶数组
+*              B 的下标 i ），那么该关键字 k 就作为 B[i] 中的元素（每个桶 B[i]
+*              都是一组大小为N/M的序列）；接着对每个桶 B[i] 中的所有元素进行
+*              比较排序（可以使用快速排序）；然后依次枚举输出 B[0]....B[M] 中的
+*              全部内容即是一个有序序列。
 * 时间复杂度 ：O(n)
-* 空间复杂度 ：O(n + rd)
+* 空间复杂度 ：O(n)
 * 稳定排序	 ：是
 */
+struct bucket_node {
+	int key;
+	bucket_node* next;
+};
+
+// 取得数组中最大数的位数
+int get_max_digital_count(int* array, int length)
+{
+	assert(array && length > 0);
+	
+	int i = 0; 
+	int max = array[0];
+	int maxDigitalCount = 1;
+
+	for (i = 1; i < length; i++) {
+		if (max < array[i]) {
+			max = array[i];
+		}
+	}
+	
+	while ((max / 10) > 0) {
+		max %= 10;
+		++maxDigitalCount;
+	}
+
+	return maxDigitalCount;
+}
+
+// 取得数 num 中从低到高第 bit 位上的数字
+int get_ditital_at(int num, int bit)
+{
+	while (--bit > 0) {
+		num /= 10;
+	}
+
+	return (num % 10);
+}
+
 void bucket_sort(int* array, int length)
 {
 	assert(array && length >= 0);
+	
+	int i, k, index;
+	bucket_node* temp = NULL, *next = NULL;
+	bucket_node bucket[10] = {0, };	// 根据数字个数 0 ~ 9 建立 10 个桶
 
+	int count = get_max_digital_count(array, length);
+
+	// 建立数据节点
+	bucket_node* data = (bucket_node*)malloc(length * sizeof(bucket_node));
+	if (!data) {
+		printf("Error: out of memory!\n");
+		return;
+	}
+
+	for (i = 0; i < length; i++) {
+		data[i].key = array[i];
+		data[i].next = NULL;
+	}
+
+	// 根据从低到高位上的数字依次进行桶排序
+	for (k = 1; k <= count; k++) {
+		// 分配
+		for (i = 0; i < length; i++) {
+			index = get_ditital_at(data[i].key, k);
+			if (bucket[index].next == NULL) {
+				bucket[index].next = &data[i];
+			}
+			else {
+				temp = &bucket[index];
+				while (temp->next != NULL && temp->next->key < data[i].key) {
+					temp = temp->next;
+				}
+
+				data[i].next = temp->next;
+				temp->next = &data[i];
+			}
+		}
+
+		// 收集
+		index = 0;
+		for (i = 0; i < 10; i++) {
+			temp = bucket[i].next;
+			while (temp != NULL) {
+				array[index++] = temp->key;
+				next = temp->next;
+				temp->next = NULL;
+				temp = next;
+			}
+
+			bucket[i].next = NULL;
+		}
+	}
+
+	free(data);
 }
-
 
 /**
 * 算法名称	 ：基数排序
@@ -479,6 +574,7 @@ void bucket_sort(int* array, int length)
 * 时间复杂度 ：O(n)
 * 空间复杂度 ：O(n + rd)
 * 稳定排序	 ：是
+*
 */
 void radix_sort(int* array, int length)
 {
