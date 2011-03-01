@@ -1,5 +1,7 @@
 // Test.cpp : Defines the entry point for the console application.
 //
+#include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include "SortAlgorithms.h"
 
