@@ -5,9 +5,28 @@
 #include <assert.h>
 #include "SortAlgorithms.h"
 
-typedef void (*sort_function)(int* array, int length);
+typedef void (*Sort_Function)(int* array, int length);
 
-void print_array(int* a, int length, const char* prefix)
+struct FucntionInfo {
+	char * name;
+	Sort_Function func;
+};
+
+FucntionInfo functionList[] = {
+	{"insert sort",	insert_sort},
+	{"shell sort", shell_sort},
+	{"bubble sort", bubble_sort},
+	{"bubble sort optimize", bubble_sort_opt},
+	{"quick sort", quick_sort},
+	{"straight selection sort", select_sort},
+	{"heap sort", heap_sort},
+	{"merge sort 自下向上分治", merge_sort},
+	{"merge sort 自上向下分治", merge_sort_dc},
+	{"bucket sort", bucket_sort},
+	{"", NULL}
+};
+
+void print_array(const int* a, int length, const char* prefix)
 {
 	assert(a && length >= 0);
 
@@ -22,49 +41,32 @@ void print_array(int* a, int length, const char* prefix)
 	printf("\n");
 }
 
-void test(sort_function func)
+void test(Sort_Function func)
 {
 	const int length = 10;
-	int array[length] = {5, 2, 9, 10, 23, 15, 27, 1, 16, 9};
-	//int array[length] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-	//int array[length] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+	const int count = 1;
+	int array[count][length] = {
+		{5, 2, 9, 10, 23, 15, 27, 1, 16, 9},
+		//{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		//{10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
+	};
 	
-	print_array(array, length, " original: ");
-	
-	func(array, length);
+	for (int i = 0; i < count; i++) {
+		print_array(array[i], length, " original: ");
 
-	print_array(array, length, " sorted: ");
+		func(array[i], length);
+
+		print_array(array[i], length, "   sorted: ");
+	}
 }
 
 int main(int argc, const char* argv[])
 {
-	printf("\n=== insert sort ===\n");
-	test(insert_sort);
+	for (int i = 0; functionList[i].func != NULL; i++) {
+		printf("\n=== %s ===\n", functionList[i].name);
+		test(functionList[i].func);
+	}
 
-	printf("\n=== shell sort ===\n");
-	test(shell_sort);
-
-	printf("\n=== bubble sort ===\n");
-	test(bubble_sort);
-
-	printf("\n=== bubble sort optimize ===\n");
-	test(bubble_sort_opt);
-
-	printf("\n=== quick sort ===\n");
-	test(quick_sort);
-
-	printf("\n=== straight selection sort ===\n");
-	test(select_sort);
-
-	printf("\n=== heap sort ===\n");
-	test(heap_sort);
-
-	printf("\n=== merge sort 自下向上分治 ===\n");
-	test(merge_sort);
-
-	printf("\n=== merge sort 自上向下分治 ===\n");
-	test(merge_sort_dc);
-
-	getchar();
+	system("pause");
 	return 0;
 }
