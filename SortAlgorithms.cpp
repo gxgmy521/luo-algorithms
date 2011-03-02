@@ -24,6 +24,10 @@ void insert_sort(int* array, int length)
 {
 	assert(array && length >= 0);
 
+	if (length <= 1) {
+		return;
+	}
+
 	int i, j, temp;
 	for (i = 1; i < length; ++i) {
 		temp = array[i];
@@ -50,6 +54,10 @@ void insert_sort(int* array, int length)
 void shell_sort(int* array, int length)
 {
 	assert(array && length >= 0);
+
+	if (length <= 1) {
+		return;
+	}
 
 	int i, j , temp;
 	int increment = length;
@@ -88,6 +96,10 @@ void bubble_sort(int* array, int length)
 {
 	assert(array && length >= 0);
 
+	if (length <= 1) {
+		return;
+	}
+
 	int i, j, temp;
 	bool exchange;
 
@@ -123,6 +135,10 @@ void bubble_sort(int* array, int length)
 void bubble_sort_opt(int* array, int length)
 {
 	assert(array && length >= 0);
+
+	if (length <= 1) {
+		return;
+	}
 
 	int i, j, temp;
 	bool exchange;
@@ -226,6 +242,10 @@ void quick_sort(int* array, int length)
 void select_sort(int* array, int length)
 {
 	assert(array && length >= 0);
+
+	if (length <= 1) {
+		return;
+	}
 
 	int i, j, k, temp;
 
@@ -335,6 +355,10 @@ void build_heap(int* heap, int length)
 void heap_sort(int* array, int length)
 {
 	assert(array && length >= 0);
+
+	if (length <= 1) {
+		return;
+	}
 
 	int i, temp;
 
@@ -476,7 +500,7 @@ void merge_sort_dc(int* array, int length)
 *              比较排序（可以使用快速排序）；然后依次枚举输出 B[0]....B[M] 中的
 *              全部内容即是一个有序序列。
 * 时间复杂度 ：O(n)
-* 空间复杂度 ：O(n)
+* 空间复杂度 ：O(n + m)
 * 稳定排序	 ：是
 */
 struct bucket_node {
@@ -520,6 +544,10 @@ int get_ditital_at(int num, int n)
 void bucket_sort(int* array, int length)
 {
 	assert(array && length >= 0);
+
+	if (length <= 1) {
+		return;
+	}
 	
 	int i, index;
 	bucket_node* temp = NULL;
@@ -574,24 +602,30 @@ void bucket_sort(int* array, int length)
 * 算法名称	 ：基数排序
 * 算法描述	 ：
 * 时间复杂度 ：O(n)
-* 空间复杂度 ：O(n + rd)
+* 空间复杂度 ：O(n + m)
 * 稳定排序	 ：是
 *
 */
 void radix_sort(int* array, int length)
 {
 	assert(array && length >= 0);
-	
-	int i, k, index;
-	const int buffer_size = length * sizeof(int);
-	int count = get_max_digital_count(array, length);
 
-	int bucket[10] = {0, };
+	if (length <= 1) {
+		return;
+	}
+	
+	const int buffer_size = length * sizeof(int);
+
+	int i, k, count, index;
+	int bucket[10] = {0, };	// 根据数字个数 0 ~ 9 建立 10 个桶
+
 	int* temp = (int*)malloc(buffer_size);
 	if (!temp) {
 		printf("Error: out of memory!\n");
 		return;
 	}
+
+	count = get_max_digital_count(array, length);
 
 	for (k = 1; k <= count; ++k) {
 		memset(bucket, 0, 10 * sizeof(int));
