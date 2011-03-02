@@ -13,14 +13,15 @@
 #define debug_print(fmt,...)
 #endif
 
-int sequential_search(int* array, int length, int key)
+// 顺序查找:在任意序列中查找，成功时返回结点的位置，失败时返回 -1
+int sequential_search(const int* array, int length, int key)
 {
 	assert(array && length >= 0);
 
 	int i;
 
 	for (i = 0; i < length; ++i) {
-		if (array[i] == value) {
+		if (array[i] == key) {
 			return i;
 		}
 	}
@@ -28,20 +29,67 @@ int sequential_search(int* array, int length, int key)
 	return -1;
 }
 
-// 在有序表 [0, length - 1]中进行二分查找。
-// 成功时返回结点的位置，失败时返回 -1
-int binary_search(int* array, int length, int key)
+// 二分查找:在有序序列中查找，成功时返回结点的位置，失败时返回 -1
+int binary_search(const int* array, int length, int key)
 {
+	assert(array && length >= 0);
 
-{ //在有序表R[1..n]中进行二分查找，成功时返回结点的位置，失败时返回零
-	int low=1，high=n，mid； //置当前查找区间上、下界的初值
-		while(low<=high){ //当前查找区间R[low..high]非空
-			mid=(low+high)/2；
-				if(R[mid].key==K) return mid； //查找成功返回
-					if(R[mid].kdy>K)
-						high=mid-1; //继续在R[low..mid-1]中查找
-					else
-						low=mid+1； //继续在R[mid+1..high]中查找
+	int low = 0;
+	int high = length;
+	int mid;
+
+	while (low <= high) {
+		mid = (low + high) >> 1;
+
+		if (array[mid] == key) {
+			return mid;
 		}
-		return 0； //当low>high时表示查找区间为空，查找失败
-} //BinSeareh
+
+		if (array[mid] > key) {
+			high = mid - 1;
+		}
+		else {
+			low = mid + 1;
+		}
+	}
+
+	return -1;
+}
+
+// 分块查找/索引顺序查找
+int blocking_search(
+	const int* array,
+	int length,
+	IndexNode* indexTableHeader,
+	int key)
+{
+	assert(array && length >= 0 && indexTableHeader);
+
+	int i, low, high;
+	IndexNode* indexNode = indexTableHeader;
+
+	// 顺序查找索引表，若索引表是顺序结构可以使用二分查找提高效率
+	low = 0;
+	while (indexNode) {
+		if (indexNode->key > key) {
+			high = indexNode->index - 1;
+			break;
+		}
+		
+		low = indexNode->index;
+
+		indexNode = indexNode->next;
+	}
+
+	if (!indexNode) {
+		high = length - 1;
+	}
+
+	for (i = low; i <= high; ++i) {
+		if (array[i] == key) {
+			return i;
+		}
+	}
+
+	return -1;
+}
