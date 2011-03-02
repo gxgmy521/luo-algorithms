@@ -60,29 +60,50 @@ int binary_search(const int* array, int length, int key)
 int blocking_search(
 	const int* array,
 	int length,
-	IndexNode* indexTableHeader,
+	IndexNode* indexTable,
+	int indexTableLength,
 	int key)
 {
-	assert(array && length >= 0 && indexTableHeader);
+	assert(array && length >= 0 && indexTable && indexTableLength >= 0);
 
-	int i, low, high;
-	IndexNode* indexNode = indexTableHeader;
+	int i, low, high, mid;
 
-	// 顺序查找索引表，若索引表是顺序结构可以使用二分查找提高效率
+	
+
+#if 1
+	// 顺序查找索引表
 	low = 0;
-	while (indexNode) {
-		if (indexNode->key > key) {
-			high = indexNode->index - 1;
+	for (i = 0; i < indexTableLength; ++i) {
+		if (indexTable[i].key > key) {
+			high = indexTable[i].index - 1;
 			break;
 		}
-		
-		low = indexNode->index;
 
-		indexNode = indexNode->next;
+		low = indexTable[i].index;
 	}
+#else
+	// 二分查找索引表
+	low = 0;
+	high = indexTableLength - 1;
 
-	if (!indexNode) {
-		high = length - 1;
+	while (low <= high) {
+		mid = (low + high) >> 1;
+
+		if (indexTable[mid] == key) {
+			break;
+		}
+
+		if (array[mid] > key) {
+			high = mid - 1;
+		}
+		else {
+			low = mid + 1;
+		}
+	}
+#endif
+
+	if (i == indexTableLength) {
+		return length - 1;
 	}
 
 	for (i = low; i <= high; ++i) {

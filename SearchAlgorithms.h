@@ -51,7 +51,8 @@ struct IndexNode {
 int blocking_search(
 	const int* array,
 	int length,
-	IndexNode* indexTableHeader,
+	IndexNode* indexTable,
+	int indexTableLength,
 	int key);
 
 

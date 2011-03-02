@@ -125,7 +125,7 @@ void test_search()
 
 	// 测试分块查找
 	testArray = array[2];
-	key1 = 49;
+	key1 = 72;
 	key2 = 55;
 	
 	//{10, 8, 18, 43, 27, 32, 58, 49, 65, 72},
@@ -145,9 +145,9 @@ void test_search()
 
 	printf("\n=== 分块查找 ===\n");
 	print_array(testArray, length, " data: ");
-	pos = blocking_search(testArray, length, &indexNode[0], key1);
+	pos = blocking_search(testArray, length, indexNode, 4, key1);
 	printf(" try searching %d, index is %d\n", key1, pos);
-	pos = blocking_search(testArray, length, &indexNode[0],  key2);
+	pos = blocking_search(testArray, length, indexNode, 4,  key2);
 	printf(" try searching %d, index is %d\n", key2, pos);
 }
 
