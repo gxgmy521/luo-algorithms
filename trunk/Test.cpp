@@ -23,6 +23,7 @@ FucntionInfo functionList[] = {
 	{"merge sort 自下向上分治", merge_sort},
 	{"merge sort 自上向下分治", merge_sort_dc},
 	{"bucket sort", bucket_sort},
+	{"radix sort", radix_sort},
 	{"", NULL}
 };
 
@@ -46,7 +47,8 @@ void test(Sort_Function func)
 	const int length = 10;
 	const int count = 1;
 	int array[count][length] = {
-		{5, 2, 9, 10, 23, 15, 27, 1, 16, 9},
+		//{5, 2, 9, 10, 23, 15, 27, 1, 16, 9},
+		{65, 32, 49, 10, 8, 72, 27, 42, 18, 58},
 		//{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
 		//{10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
 	};
@@ -57,6 +59,8 @@ void test(Sort_Function func)
 		func(array[i], length);
 
 		print_array(array[i], length, "   sorted: ");
+
+		printf("\n");
 	}
 }
 
