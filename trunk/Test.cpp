@@ -12,7 +12,7 @@ struct FucntionInfo {
 	Sort_Function func;
 };
 
-FucntionInfo functionList[] = {
+FucntionInfo sort_function_list[] = {
 	{"insert sort",	insert_sort},
 	{"shell sort", shell_sort},
 	{"bubble sort", bubble_sort},
@@ -42,7 +42,7 @@ void print_array(const int* a, int length, const char* prefix)
 	printf("\n");
 }
 
-void test(Sort_Function func)
+void test_sort(Sort_Function func)
 {
 	const int length = 10;
 	const int count = 1;
@@ -66,9 +66,9 @@ void test(Sort_Function func)
 
 int main(int argc, const char* argv[])
 {
-	for (int i = 0; functionList[i].func != NULL; i++) {
-		printf("\n=== %s ===\n", functionList[i].name);
-		test(functionList[i].func);
+	for (int i = 0; sort_function_list[i].func != NULL; i++) {
+		printf("\n=== %s ===\n", sort_function_list[i].name);
+		test_sort(sort_function_list[i].func);
 	}
 
 	system("pause");
