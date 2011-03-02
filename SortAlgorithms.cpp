@@ -5,6 +5,14 @@
 
 #include "SortAlgorithms.h"
 
+#define DEBUG_SORT
+
+#ifdef DEBUG_SORT
+#define debug_print(fmt,...) printf(fmt, __VA_ARGS__)
+#else
+#define debug_print(fmt,...)
+#endif
+
 /**
 * 算法名称	 ：直接插入排序
 * 算法描述	 ：依次从无序区中选择记录插入到有序区中的合适位置使之依然有序。
@@ -499,10 +507,10 @@ int get_max_digital_count(int* array, int length)
 	return maxDigitalCount;
 }
 
-// 取得数 num 中从低到高第 bit 位上的数字
-int get_ditital_at(int num, int bit)
+// 取得数 num 中从低到高第 n 位上的数字
+int get_ditital_at(int num, int n)
 {
-	while (--bit > 0) {
+	while (--n > 0) {
 		num /= 10;
 	}
 
@@ -513,8 +521,8 @@ void bucket_sort(int* array, int length)
 {
 	assert(array && length >= 0);
 	
-	int i, k, index;
-	bucket_node* temp = NULL, *next = NULL;
+	int i, index;
+	bucket_node* temp = NULL;
 	bucket_node bucket[10] = {0, };	// 根据数字个数 0 ~ 9 建立 10 个桶
 
 	int count = get_max_digital_count(array, length);
@@ -531,39 +539,33 @@ void bucket_sort(int* array, int length)
 		data[i].next = NULL;
 	}
 
-	// 根据从低到高位上的数字依次进行桶排序
-	for (k = 1; k <= count; k++) {
-		// 分配
-		for (i = 0; i < length; i++) {
-			index = get_ditital_at(data[i].key, k);
-			if (bucket[index].next == NULL) {
-				bucket[index].next = &data[i];
-			}
-			else {
-				temp = &bucket[index];
-				while (temp->next != NULL && temp->next->key < data[i].key) {
-					temp = temp->next;
-				}
-
-				data[i].next = temp->next;
-				temp->next = &data[i];
-			}
+	// 分配
+	for (i = 0; i < length; i++) {
+		index = get_ditital_at(data[i].key, count);
+		if (bucket[index].next == NULL) {
+			bucket[index].next = &data[i];
 		}
-
-		// 收集
-		index = 0;
-		for (i = 0; i < 10; i++) {
-			temp = bucket[i].next;
-			while (temp != NULL) {
-				array[index++] = temp->key;
-				next = temp->next;
-				temp->next = NULL;
-				temp = next;
+		else {
+			temp = &bucket[index];
+			while (temp->next != NULL && temp->next->key < data[i].key) {
+				temp = temp->next;
 			}
 
-			bucket[i].next = NULL;
+			data[i].next = temp->next;
+			temp->next = &data[i];
 		}
 	}
+
+	// 收集
+	index = 0;
+	for (i = 0; i < 10; i++) {
+		temp = bucket[i].next;
+		while (temp != NULL) {
+			array[index++] = temp->key;
+			temp = temp->next;
+		}
+	}
+
 
 	free(data);
 }
@@ -579,6 +581,51 @@ void bucket_sort(int* array, int length)
 void radix_sort(int* array, int length)
 {
 	assert(array && length >= 0);
+	
+	int i, k, index;
+	const int buffer_size = length * sizeof(int);
+	int count = get_max_digital_count(array, length);
 
+	int bucket[10] = {0, };
+	int* temp = (int*)malloc(buffer_size);
+	if (!temp) {
+		printf("Error: out of memory!\n");
+		return;
+	}
+
+	for (k = 1; k <= count; ++k) {
+		memset(bucket, 0, 10 * sizeof(int));
+
+		// 统计各桶中元素的个数
+		for (i = 0; i < length; ++i) {
+			index = get_ditital_at(array[i], k);
+			++bucket[index];
+		}
+
+		// 为每个记录创建索引下标
+		for (i = 1; i < 10; ++i) {
+			bucket[i] += bucket[i - 1];
+		}
+
+		// 按索引下标顺序排列
+		for (i = length - 1; i >= 0; --i) {
+			index = get_ditital_at(array[i], k);
+			assert(bucket[index] - 1 >= 0);
+			temp[--bucket[index]] = array[i];
+		}
+		
+		// 一趟桶排序完毕，拷贝结果
+		memcpy(array, temp, buffer_size);
+
+#ifdef DEBUG_SORT
+		debug_print(" 第 %d 趟排序：", k);
+		for (i = 0; i < length; ++i) {
+			debug_print("%d ", array[i]);
+		}
+
+		debug_print("\n");
+#endif
+	}
+
+	free(temp);
 }
-
