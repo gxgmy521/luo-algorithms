@@ -33,7 +33,7 @@ void insert_sort(int* array, int length)
 		temp = array[i];
 		j = i - 1;
 
-		while (temp < array[j]) {
+		while (j >= 0 && temp < array[j]) {
 			array[j + 1] = array[j];
 			--j;
 		}
