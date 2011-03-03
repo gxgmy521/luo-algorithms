@@ -10,16 +10,10 @@
 #define SEARCH_TEST
 
 typedef void (*Sort_Function)(int* array, int length);
-typedef int (*Search_Function)(const int* array, int length, int key);
 
 struct SortFucntionInfo {
 	char * name;
 	Sort_Function func;
-};
-
-struct SearchFucntionInfo {
-	char * name;
-	Search_Function func;
 };
 
 SortFucntionInfo sort_function_list[] = {
@@ -34,12 +28,6 @@ SortFucntionInfo sort_function_list[] = {
 	{"合并排序：自上向下分治",	merge_sort_dc},
 	{"桶/箱排序",				bucket_sort},
 	{"基数排序",				radix_sort},
-	{"", NULL}
-};
-
-SearchFucntionInfo search_function_list[] = {
-	{"线性查找",				sequential_search},
-	{"二分查找",				binary_search},
 	{"", NULL}
 };
 
@@ -60,13 +48,11 @@ void print_array(const int* a, int length, const char* prefix)
 
 void test_sort(Sort_Function func)
 {
-	const int length = 10;
-	const int count = 1;
+	const int length = 11;
+	const int count = 2;
 	int array[count][length] = {
-		//{5, 2, 9, 10, 23, 15, 27, 1, 16, 9},
-		{65, 32, 49, 10, 8, 72, 27, 42, 18, 58},
-		//{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-		//{10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
+		{65, 32, 49, 10, 8, 72, 27, 42, 18, 58, 91},
+		{10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0},
 	};
 	
 	for (int i = 0; i < count; i++) {
@@ -82,24 +68,25 @@ void test_sort(Sort_Function func)
 
 void test_search()
 {
-	const int length = 10;
+	const int length = 11;
 	const int count = 3;
 	int array[count][length] = {
-		{65, 32, 49, 10, 8, 72, 27, 42, 18, 58},
+		{65, 32, 49, 10, 8, 72, 27, 42, 18, 58, 91},
 
 		// 二分查找要求序列有序
-		{8, 10, 18, 27, 32, 43, 49, 58, 65, 72},
+		{8, 10, 18, 27, 32, 43, 49, 58, 65, 72, 96},
 		
 		// 分块查找要求序列分块有序: 块长为 3，共 4 块 
-		{10, 8, 18, 43, 27, 32, 58, 49, 65, 72},
+		{10, 8, 18, 43, 27, 32, 58, 49, 65, 72, 69},
 	};
 
 
 	int pos, key1, key2;
 	int* testArray;
 
+	//////////////////////////////////////////////////////////
 	// 测试顺序查找
-	
+	//////////////////////////////////////////////////////////
 	testArray = array[0];
 	key1 = 72;
 	key2 = 55;
@@ -111,7 +98,9 @@ void test_search()
 	pos = sequential_search(testArray, length, key2);
 	printf(" try searching %d, index is %d\n", key2, pos);
 
+	//////////////////////////////////////////////////////////
 	// 测试二分查找
+	//////////////////////////////////////////////////////////
 	testArray = array[1];
 	key1 = 27;
 	key2 = 55;
@@ -123,25 +112,24 @@ void test_search()
 	pos = binary_search(testArray, length, key2);
 	printf(" try searching %d, index is %d\n", key2, pos);
 
+	//////////////////////////////////////////////////////////
 	// 测试分块查找
+	//////////////////////////////////////////////////////////
 	testArray = array[2];
 	key1 = 72;
 	key2 = 55;
 	
+	// 创建索引表
 	//{10, 8, 18, 43, 27, 32, 58, 49, 65, 72},
 	IndexNode indexNode[4];
 	indexNode[0].key = 18;
 	indexNode[0].index = 2;
-	indexNode[0].next = &indexNode[1];
 	indexNode[1].key = 43;
 	indexNode[1].index = 3;
-	indexNode[1].next = &indexNode[2];
 	indexNode[2].key = 65;
 	indexNode[2].index = 8;
-	indexNode[2].next = &indexNode[3];
 	indexNode[3].key = 72;
 	indexNode[3].index = 9;
-	indexNode[3].next = NULL;
 
 	printf("\n=== 分块查找 ===\n");
 	print_array(testArray, length, " data: ");
@@ -149,6 +137,34 @@ void test_search()
 	printf(" try searching %d, index is %d\n", key1, pos);
 	pos = blocking_search(testArray, length, indexNode, 4,  key2);
 	printf(" try searching %d, index is %d\n", key2, pos);
+
+	//////////////////////////////////////////////////////////
+	// 测试采用开放地址的散列查找
+	//////////////////////////////////////////////////////////
+	testArray = array[2];
+	key1 = 72;
+	key2 = 55;
+	Hash_Function hashFunc = hash_remiander;	
+	//Hash_Function hashFunc = hash_multi_round_off;	//换成这个试试;
+
+	printf("\n=== 散列查找 ===\n");
+	print_array(testArray, length, " data: ");
+
+	// 创建开放地址散列表
+	int tableLength = 16;
+	int* hashTable = (int*)malloc(tableLength * sizeof(int));
+	create_open_address_hash_table(
+		testArray, length, hashFunc, tableLength, hashTable);
+
+	pos = open_address_hash_search(hashTable, tableLength, hashFunc, key1);
+	printf(" try searching %d, index at hash is %d\n", key1, pos);
+	pos = open_address_hash_search(hashTable, tableLength, hashFunc, key2);
+	printf(" try searching %d, index at hash is %d\n", key2, pos);
+
+	free(hashTable);
+	hashTable = NULL;
+
+
 }
 
 int main(int argc, const char* argv[])
