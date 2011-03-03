@@ -64,6 +64,15 @@ int blocking_search(
  * 返回值	 : 成功时返回结点的位置，失败时返回 -1
  */
 
+// 冲突发生时，继续进行探查的方式
+enum Conflict_Resolution
+{
+	Conflict_Resolution_Linear		= 0,	// 线性探查
+	Conflict_Resolution_Quadratic	= 1,	// 线性探查
+	Conflict_Resolution_Double_Hash	= 2,	// 双重散列探查
+};
+
+// hash 函数
 typedef int (*Hash_Function)(int key, int hashTableLength);
 
 // 散列函数：取余法
@@ -77,19 +86,54 @@ int hash_remiander(int key, int hashTableLength);
 //
 int hash_multi_round_off(int key, int hashTableLength);
 
+//=========================================================
+//					开放地址法散列
+//=========================================================
 // 创建采用开放地址法的散列表
 void create_open_address_hash_table(
+	int* table,
+	int tableLength,
 	const int* data,
 	int dataLength,
-	Hash_Function hashFunc,
-	int tableLength,
-	int* table);
+	Hash_Function hashFunc = hash_remiander,			// 设置 hash 函数
+	Conflict_Resolution = Conflict_Resolution_Linear);	// 设置散列表发生冲突时采用的探查方式
 
+// 在采用开放地址法的散列表中查找
 int open_address_hash_search(
-	const int* hashTable,
-	int hashTableLength,
-	Hash_Function hashFunc,
-	int key);
+	int key,
+	const int* table,
+	int tableLength,
+	Hash_Function hashFunc = hash_remiander,			// 设置 hash 函数
+	Conflict_Resolution = Conflict_Resolution_Linear);	// 设置散列表发生冲突时采用的探查方式
+
+
+//=========================================================
+//					拉链法散列
+//=========================================================
+struct Hash_Node{
+	int key;
+	Hash_Node* next;
+};
+
+// 创建采用拉链法的散列表
+void create_link_hash_table(
+   Hash_Node* table,
+   int tableLength,
+   const int* data,
+   int dataLength,
+   Hash_Function hashFunc = hash_remiander);
+
+// 销毁采用拉链法的散列表
+void destroy_link_hash_table(
+	Hash_Node* table,
+	int tableLength);
+
+// 在采用拉链法的散列表中查找
+int open_address_hash_search(
+	int key,
+	const Hash_Node* hashTable,
+	int tableLength,
+	Hash_Function hashFunc = hash_remiander);
 
 
 #endif // __SEARCH_ALGORITHMS_H__
