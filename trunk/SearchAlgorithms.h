@@ -96,7 +96,8 @@ void create_open_address_hash_table(
 	const int* data,
 	int dataLength,
 	Hash_Function hashFunc = hash_remiander,			// 设置 hash 函数
-	Conflict_Resolution = Conflict_Resolution_Linear);	// 设置散列表发生冲突时采用的探查方式
+	Conflict_Resolution = Conflict_Resolution_Linear,	// 设置散列表发生冲突时采用的探查方式
+	int zeroValue = -1);								// 设置为序列中没有的值（零值）
 
 // 在采用开放地址法的散列表中查找
 int open_address_hash_search(
@@ -104,8 +105,8 @@ int open_address_hash_search(
 	const int* table,
 	int tableLength,
 	Hash_Function hashFunc = hash_remiander,			// 设置 hash 函数
-	Conflict_Resolution = Conflict_Resolution_Linear);	// 设置散列表发生冲突时采用的探查方式
-
+	Conflict_Resolution = Conflict_Resolution_Linear,	// 设置散列表发生冲突时采用的探查方式
+	int zeroValue = -1);								// 设置为序列中没有的值（零值）
 
 //=========================================================
 //					拉链法散列
@@ -117,11 +118,12 @@ struct Hash_Node{
 
 // 创建采用拉链法的散列表
 void create_link_hash_table(
-   Hash_Node* table,
-   int tableLength,
-   const int* data,
-   int dataLength,
-   Hash_Function hashFunc = hash_remiander);
+	Hash_Node** table,
+	int tableLength,
+	const int* data,
+	int dataLength,
+	Hash_Function hashFunc = hash_remiander,// 设置 hash 函数
+	int zeroValue = -1);					// 设置为序列中没有的值（零值）
 
 // 销毁采用拉链法的散列表
 void destroy_link_hash_table(
@@ -129,11 +131,13 @@ void destroy_link_hash_table(
 	int tableLength);
 
 // 在采用拉链法的散列表中查找
-int open_address_hash_search(
+int link_hash_search(
 	int key,
 	const Hash_Node* hashTable,
 	int tableLength,
-	Hash_Function hashFunc = hash_remiander);
+	Hash_Function hashFunc = hash_remiander,// 设置 hash 函数
+	int zeroValue = -1);					// 设置为序列中没有的值（零值）
+
 
 
 #endif // __SEARCH_ALGORITHMS_H__

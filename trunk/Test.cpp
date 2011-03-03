@@ -154,10 +154,10 @@ void test_search()
 	conflictResolution = Conflict_Resolution_Quadratic;
 	//conflictResolution = Conflict_Resolution_Double_Hash;
 
-	printf("\n=== 散列查找 ===\n");
+	printf("\n=== 开放地址法散列查找 ===\n");
 	print_array(testArray, length, " data: ");
 
-	// 创建开放地址散列表
+	// 创建开放地址法散列表
 	int tableLength = 17;	// 对于二重探查散列法，散列表长取素数或奇数为佳
 	int* hashTable = (int*)malloc(tableLength * sizeof(int));
 	create_open_address_hash_table(
@@ -167,18 +167,43 @@ void test_search()
 
 	pos = open_address_hash_search(key1, hashTable, tableLength, 
 				hashFunc, conflictResolution);
-	printf(" try searching %d, index at hash is %d\n", key1, pos);
+	printf(" try searching %d, index at hash is table %d\n", key1, pos);
 	pos = open_address_hash_search(key2, hashTable, tableLength,
 				hashFunc, conflictResolution);
-	printf(" try searching %d, index at hash is %d\n", key2, pos);
+	printf(" try searching %d, index at hash is table %d\n", key2, pos);
 
-	// 删除开放地址散列表
+	// 删除开放地址法散列表
 	free(hashTable);
 	hashTable = NULL;
 
 	//////////////////////////////////////////////////////////
 	// 测试采用拉链法的散列查找
 	//////////////////////////////////////////////////////////
+	testArray = array[2];
+	key1 = 72;
+	key2 = 55;
+
+	// 换成别的 hash 函数试试
+	hashFunc = hash_remiander;	
+	//hashFunc = hash_multi_round_off;	
+
+	printf("\n=== 拉链法散列查找 ===\n");
+	print_array(testArray, length, " data: ");
+
+	// 创建拉链法散列表
+	tableLength = 7;
+	Hash_Node* linkHashTable = NULL;
+	create_link_hash_table(
+		&linkHashTable, tableLength, testArray, length, hashFunc);
+
+	pos = link_hash_search(key1, linkHashTable, tableLength, hashFunc);
+	printf(" try searching %d, index at hash table is %d\n", key1, pos);
+	pos = link_hash_search(key2, linkHashTable, tableLength, hashFunc);
+	printf(" try searching %d, index at hash table is %d\n", key2, pos);
+
+	destroy_link_hash_table(linkHashTable, tableLength);
+
+
 }
 
 int main(int argc, const char* argv[])

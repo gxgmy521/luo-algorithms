@@ -122,39 +122,39 @@ int blocking_search(
 // 
 
 // 散列函数：取余法
-// h(key) = key % hashTableLength
+// h(key) = key % tableLength
 //
-int hash_remiander(int key, int hashTableLength)
+int hash_remiander(int key, int tableLength)
 {
-	return key % hashTableLength;
+	return key % tableLength;
 }
 
 // 散列函数：相乘取整法
-// h(key) = [hashTableLength * (key * A - [key * A])]
+// h(key) = [tableLength * (key * A - [key * A])]
 // A 约等于 (根号 5 - 1)/2 = 0.61803398
 //
-int hash_multi_round_off(int key, int hashTableLength)
+int hash_multi_round_off(int key, int tableLength)
 {
 	double d = key * 0.61803398;
-	return (int)(hashTableLength * (d - (int)d));
+	return (int)(tableLength * (d - (int)d));
 }
 
 // 探查时，使用的二重 hash 函数 h1。总的探查法为：
-// hi = (h(key) + i * h1(key)) % hashTableLength, 0 <= i <= hashTableLength - 1
+// hi = (h(key) + i * h1(key)) % tableLength, 0 <= i <= tableLength - 1
 // 
 // 定义 h1(key) 的方法较多，但无论采用什么方法定义，都必须使 h1(key) 的值和
-// hashTableLength 互素，才能使发生冲突的同义词地址均匀地分布在整个表中，
+// tableLength 互素，才能使发生冲突的同义词地址均匀地分布在整个表中，
 // 否则可能造成同义词地址的循环计算。
 //
-// 【例】若 hashTableLength 为素数，则 h1(key) 取 1 到 hashTableLength - 1 之间
-//		的任何数均与 hashTableLength 互素，因此，我们可以简单地将它定义为：
-//		h1(key) = key % (hashTableLength - 2) + 1
-// 【例】若 hashTableLength 是 2 的方幂，
-//      则 h1(key) 可取 1 到 hashTableLength - 1之间的任何奇数。
+// 【例】若 tableLength 为素数，则 h1(key) 取 1 到 tableLength - 1 之间
+//		的任何数均与 tableLength 互素，因此，我们可以简单地将它定义为：
+//		h1(key) = key % (tableLength - 2) + 1
+// 【例】若 tableLength 是 2 的方幂，
+//      则 h1(key) 可取 1 到 tableLength - 1之间的任何奇数。
 //
-int hash_double(int key, int hashTableLength)
+int hash_double(int key, int tableLength)
 {
-	return key % (hashTableLength - 2) + 1;
+	return key % (tableLength - 2) + 1;
 }
 
 //=========================================================
@@ -168,15 +168,15 @@ void create_open_address_hash_table(
    const int* data,
    int dataLength,
    Hash_Function hashFunc,
-   Conflict_Resolution confictResolution)
+   Conflict_Resolution confictResolution,
+   int zeroValue)
 {
 	assert(data && table && hashFunc
 		&& dataLength > 0 && tableLength > 0);
 
 	int i, j, index, index2, temp;
-	const int zeroValue = -1;	// 设置为序列中没有的值（零值）
 
-	// 初始化 hash table
+	// 初始化 hash table, 设置为序列中没有的值（零值）
 	for (i = 0; i < tableLength; ++i) {
 		table[i] = zeroValue;
 	}
@@ -264,12 +264,13 @@ int open_address_hash_search(
 	 const int* table,
 	 int tableLength,
 	 Hash_Function hashFunc,
-	 Conflict_Resolution confictResolution)
+	 Conflict_Resolution confictResolution,
+	 int zeroValue)
 {
 	assert(table && hashFunc && tableLength > 0);
-	
+	assert(key != zeroValue);
+
 	int j, index, index2, temp;
-	const int zeroValue = -1;
 
 	index = (hashFunc)(key, tableLength);
 	if (table[index] == key) {
@@ -343,23 +344,27 @@ int open_address_hash_search(
 // 创建采用拉链法的散列表
 //
 void create_link_hash_table(
-	Hash_Node* table,
+	Hash_Node** pTable,
 	int tableLength,
 	const int* data,
 	int dataLength,
-	Hash_Function hashFunc)
+	Hash_Function hashFunc,
+	int zeroValue)
 {
-	assert(table && data && hashFunc && tableLength > 0 && dataLength > 0);
+	assert(pTable && data && hashFunc && tableLength > 0 && dataLength > 0);
 
-	const int zeroValue = -1;	// 设置为序列中没有的值（零值）
 	int i, index;
 	Hash_Node* node, *newNode;
+	Hash_Node* table = NULL;
 
 	table = (Hash_Node*)malloc(tableLength * sizeof(Hash_Node));
 	if (!table) {
+		*pTable = NULL;
 		printf("Error: out of memory!\n");
 		return;
 	}
+
+	*pTable = table;
 
 	// 初始化表
 	for (i = 0; i < tableLength; ++i) {
@@ -373,7 +378,7 @@ void create_link_hash_table(
 			table[index].key = data[i];
 		}
 		else {
-			node = table[index].next;
+			node = &table[index];
 			while (node->next) {
 				node = node->next;
 			}
@@ -387,15 +392,16 @@ void create_link_hash_table(
 	}
 
 #ifdef DEBUG_SEARCH
-	debug_print("\n创建长度为 %d 的 hash table：\n  ", tableLength);
+	debug_print("\n创建长度为 %d 的 hash table：\n", tableLength);
 	for (i = 0; i < tableLength; ++i) {
 		node = &table[i];
+		debug_print(" %d : ", i);
 		while (node) {
-			debug_print("%d ", node->key);
+			debug_print(" %d ->", node->key);
 			node = node->next;
 		}
 
-		debug_print("\n");
+		debug_print(" null\n");
 	}
 	debug_print("\n");
 #endif
@@ -411,7 +417,7 @@ void destroy_link_hash_table(
 	Hash_Node* node, *nextNode;
 
 	for (i = 0; i < tableLength; ++i) {
-		node = &table[i];
+		node = table[i].next;
 		while (node) {
 			nextNode = node->next;
 			free(node);
@@ -419,17 +425,33 @@ void destroy_link_hash_table(
 			node = nextNode;
 		}
 	}
+
+	free(table);
+	table = NULL;
 }
 
 // 在采用拉链法的散列表中查找
 //
-int open_address_hash_search(
+int link_hash_search(
 	int key,
-	const Hash_Node** table,
+	const Hash_Node* table,
 	int tableLength,
-	 Hash_Function hashFunc)
+	Hash_Function hashFunc,
+	int zeroValue)
 {
 	assert(table && hashFunc && tableLength > 0);
+	assert(key != zeroValue);
 
-	return 0;
+	int index = (hashFunc)(key, tableLength);
+	const Hash_Node* node = &table[index];
+
+	while (node) {
+		if (node->key == key) {
+			return index;
+		}
+		
+		node = node->next;
+	}
+
+	return -1;
 }
