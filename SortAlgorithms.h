@@ -28,10 +28,12 @@ void merge_sort(int* array, int length);
 // 用分治法自上向下进行二路归并排序
 void merge_sort_dc(int* array, int length);
 
-// 箱/桶排序
+// 箱/桶排序：以空间换时间
+// 在这里只对正数排序
 void bucket_sort(int* array, int length);
 
-// 基数排序
+// 基数排序：以空间换时间
+// 在这里只对正数排序
 void radix_sort(int* array, int length);
 
 #endif // __SORT_ALGORITHMS_H__
