@@ -20,13 +20,13 @@ SortFucntionInfo sort_function_list[] = {
 	{"直接插入排序",			insert_sort},
 	{"希尔排序",				shell_sort},
 	{"冒泡排序",				bubble_sort},
-	{"冒泡排序优化版",			bubble_sort_opt},
+	{"冒泡排序优化版",		bubble_sort_opt},
 	{"快速排序",				quick_sort},
 	{"直接选择排序",			select_sort},
-	{"堆排序",					heap_sort},
+	{"堆排序",				heap_sort},
 	{"合并排序：自下向上分治",	merge_sort},
 	{"合并排序：自上向下分治",	merge_sort_dc},
-	{"桶/箱排序",				bucket_sort},
+	{"桶/箱排序",			bucket_sort},
 	{"基数排序",				radix_sort},
 	{"", NULL}
 };
@@ -139,32 +139,46 @@ void test_search()
 	printf(" try searching %d, index is %d\n", key2, pos);
 
 	//////////////////////////////////////////////////////////
-	// 测试采用开放地址的散列查找
+	// 测试采用开放地址法的散列查找
 	//////////////////////////////////////////////////////////
 	testArray = array[2];
 	key1 = 72;
 	key2 = 55;
+
+	// 换成别的 hash 函数试试
 	Hash_Function hashFunc = hash_remiander;	
-	//Hash_Function hashFunc = hash_multi_round_off;	//换成这个试试;
+	//hashFunc = hash_multi_round_off;	
+
+	// 换成别的探查方式试试
+	Conflict_Resolution conflictResolution = Conflict_Resolution_Linear;
+	conflictResolution = Conflict_Resolution_Quadratic;
+	//conflictResolution = Conflict_Resolution_Double_Hash;
 
 	printf("\n=== 散列查找 ===\n");
 	print_array(testArray, length, " data: ");
 
 	// 创建开放地址散列表
-	int tableLength = 16;
+	int tableLength = 17;	// 对于二重探查散列法，散列表长取素数或奇数为佳
 	int* hashTable = (int*)malloc(tableLength * sizeof(int));
 	create_open_address_hash_table(
-		testArray, length, hashFunc, tableLength, hashTable);
+		hashTable, tableLength, 
+		testArray, length, 
+		hashFunc, conflictResolution);
 
-	pos = open_address_hash_search(hashTable, tableLength, hashFunc, key1);
+	pos = open_address_hash_search(key1, hashTable, tableLength, 
+				hashFunc, conflictResolution);
 	printf(" try searching %d, index at hash is %d\n", key1, pos);
-	pos = open_address_hash_search(hashTable, tableLength, hashFunc, key2);
+	pos = open_address_hash_search(key2, hashTable, tableLength,
+				hashFunc, conflictResolution);
 	printf(" try searching %d, index at hash is %d\n", key2, pos);
 
+	// 删除开放地址散列表
 	free(hashTable);
 	hashTable = NULL;
 
-
+	//////////////////////////////////////////////////////////
+	// 测试采用拉链法的散列查找
+	//////////////////////////////////////////////////////////
 }
 
 int main(int argc, const char* argv[])
