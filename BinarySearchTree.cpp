@@ -105,7 +105,7 @@ void BST_remove(BSTree* tree, int key)
 		//             rightChild
 
 		node = parent->rightChild;
-		temp = node
+		temp = node;
 		while (node->leftChild) {
 			temp = node;
 			node = node->leftChild;
@@ -120,11 +120,11 @@ void BST_remove(BSTree* tree, int key)
 	}
 }
 
-BSTNode* BST_search(BSTree* tree, int key)
+BSTNode* BST_search(BSTree tree, int key)
 {
 	assert(tree);
 
-	BSTNode* node = *tree;
+	BSTNode* node = tree;
 	while (node) {
 		if (key == node->key) {
 			return node;
@@ -183,4 +183,6 @@ void BST_destory(BSTree* tree)
 		free(node);
 		node = NULL;
 	}
+
+	*tree = NULL;
 }
