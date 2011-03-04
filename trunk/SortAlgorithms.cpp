@@ -75,10 +75,6 @@ void bubble_sort(int* array, int length)
 {
 	assert(array && length >= 0);
 
-	if (length <= 1) {
-		return;
-	}
-
 	int i, j, temp;
 	bool exchange;
 
@@ -106,10 +102,6 @@ void bubble_sort(int* array, int length)
 void bubble_sort_opt(int* array, int length)
 {
 	assert(array && length >= 0);
-
-	if (length <= 1) {
-		return;
-	}
 
 	int i, j, temp;
 	bool exchange;
