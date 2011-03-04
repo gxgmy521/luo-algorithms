@@ -8,7 +8,7 @@
 #define DEBUG_SEARCH
 
 #ifdef DEBUG_SEARCH
-#define debug_print(fmt,...) printf(fmt, __VA_ARGS__)
+#define debug_print(fmt,...) printf(fmt, ## __VA_ARGS__)
 #else
 #define debug_print(fmt,...)
 #endif
