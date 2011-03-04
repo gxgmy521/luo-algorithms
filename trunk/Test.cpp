@@ -302,27 +302,40 @@ void test_binary_tree_search()
 	BSTree tree = NULL;
 	BSTNode* node = NULL;
 
+	// 创建二叉树
 	BST_create(&tree, array, length);
 	if (!tree) {
 		printf("Failed to create binary search tree!\n");
 		return;
 	}
-
+	
+	// 查找
 	node = BST_search(tree, key1);
-	printf("%s %d in binary search tree!\n",
+	printf("  %s %d in binary search tree.\n",
 		(NULL == node) ? "Could not find" : "Yeah! Found", key1);
 
 	node = BST_search(tree, key2);
-	printf("%s %d in binary search tree!\n",
+	printf("  %s %d in binary search tree.\n",
 		(NULL == node) ? "Could not find" : "Found", key2);
 
-	printf("Insert %d to binary search tree!\n", key2);
+	// 插入节点
+	printf(" Insert %d to binary search tree.\n", key2);
 	BST_insert(&tree, key2);
 
 	node = BST_search(tree, key2);
-	printf("Now, %s %d in binary search tree!\n",
+	printf("  %s %d in binary search tree.\n",
 		(NULL == node) ? "Could not find" : "Yeah! Found", key2);
 
+	// 删除节点
+	key2 = 27;
+	printf(" Remove %d from binary search tree.\n", key2);
+	BST_remove(&tree, key2);
+
+	node = BST_search(tree, key2);
+	printf("  %s %d in binary search tree.\n",
+		(NULL == node) ? "Could not find" : "Yeah! Found", key2);
+
+	// 销毁二叉树
 	BST_destory(&tree);
 
 	assert(NULL == tree);
