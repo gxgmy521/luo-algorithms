@@ -77,53 +77,100 @@ void BST_remove(BSTree* tree, int key)
 		}
 	}
 
-	// tree root node equals the key
-	if (NULL == parent) {
-		free(*tree);
-		*tree = NULL;
+	// key is not in the tree.
+	if (!node) {
+		printf("Can not remove %d, it is not in the tree!\n", key);
 		return;
 	}
 
-	if (!parent->rightChild) {
-		assert(parent->leftChild);
+	// 如果节点是叶子节点，直接删除，把父节点相应孩子设置为 NULL
+	if (NULL == node->leftChild && NULL == node->rightChild) {
+		// tree root node equals the key
+		if (node == *tree) {
+			*tree = NULL;
+		}
+		else {
+			assert(parent);
 
-		parent->key = parent->leftChild->key;
-		free(parent->leftChild);
-		parent->leftChild = NULL;
+			if (parent->leftChild == node) {
+				parent->leftChild = NULL;
+			}
+			else {
+				parent->rightChild = NULL;
+			}
+		}
+
+		free(node);
 	}
-	else {
-		// find the most left child of parent in the right-child-tree
-		// add set it as new parent.
-		//   parent
-		//      \
-		//      ...
-		//         \
-		//          temp
-		//          /
-		//        node           <----- remove this node
-		//            \
-		//             rightChild
+	
+	// 如果节点的左孩子不为空，右孩子为空
+	else if (NULL != node->leftChild) {
+		if (parent->leftChild == node) {
+			parent->leftChild = node->leftChild;
+		}
+		else {
+			parent->rightChild = node->leftChild;
+		}
 
-		node = parent->rightChild;
-		temp = node;
-		while (node->leftChild) {
-			temp = node;
-			node = node->leftChild;
+		free(node);
+	}
+
+	// 如果节点的右孩子不为空，左孩子为空
+	else if (NULL != node->rightChild) {
+		if (parent->leftChild == node) {
+			parent->leftChild = node->rightChild;
+		}
+		else {
+			parent->rightChild = node->rightChild;
+		}
+
+		free(node);
+	}
+
+	// 节点的左，右孩子均不为空
+	else {
+		// find the most left child of node in the right-child-tree
+		// add set it as new parent.
+		//
+		//          node		<----- replace this node
+		//		   /    \
+		//       ...    ...
+		//             /
+		//           temp       <----- remove most left child        
+		//          /    \
+		//        null  rightChild
+
+		parent = node;
+		temp = node->rightChild;
+		while (temp->leftChild) {
+			parent = temp;
+			temp = temp->leftChild;
 		}
 
 		assert(temp);
 
-		temp->leftChild = node->rightChild;
-		parent->key = node->key;
-
+		node->key = temp->key;
+		parent->leftChild = temp->rightChild;
+		
 		free(node);
 	}
 }
 
 BSTNode* BST_search(BSTree tree, int key)
 {
-	assert(tree);
-
+#if 1
+	// 递归实现
+	if (tree == NULL || tree->key == key) {
+		return tree;
+	}
+	else if (key < tree->key) {
+		return BST_search(tree->leftChild, key);
+	}
+	else {
+		return BST_search(tree->rightChild, key);
+	}
+#else
+	// 循环实现
 	BSTNode* node = tree;
 	while (node) {
 		if (key == node->key) {
@@ -139,7 +186,7 @@ BSTNode* BST_search(BSTree tree, int key)
 			}
 		}
 	}
-
+#endif
 	return NULL;
 }
 
@@ -155,17 +202,17 @@ void BBT_remove(BSTree* tree, int key)
 
 }
 
+// 根据数组内容创建二叉树
+//
 void BST_create(BSTree* tree, int* data, int length)
 {
-	assert(tree && data && length >= 0);
-
-	// create a empty tree
-	if (length == 0) {
-		*tree = (BSTNode*)malloc(sizeof(BSTNode));
-		return;
-	}
+	assert(tree && length >= 0);
 
 	*tree = NULL;
+
+	if (!data || length == 0) {
+		return;
+	}
 
 	int i;
 	for (i = 0; i < length; ++i) {
@@ -173,6 +220,8 @@ void BST_create(BSTree* tree, int* data, int length)
 	}
 }
 
+// 销毁二叉树
+// 
 void BST_destory(BSTree* tree)
 {
 	BSTNode* node = *tree;
