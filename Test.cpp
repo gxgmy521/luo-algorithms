@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "SortAlgorithms.h"
 #include "SearchAlgorithms.h"
+#include "BinarySearchTree.h"
 
 //#define SORT_TEST
 #define SEARCH_TEST
