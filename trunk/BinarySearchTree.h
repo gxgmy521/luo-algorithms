@@ -15,11 +15,12 @@ void BST_insert(BSTree* tree, int key);
 
 void BST_remove(BSTree* tree, int key);
 
-BSTNode* BST_search(BSTree* tree, int key);
+BSTNode* BST_search(const BSTree tree, int key);
 
 void BST_create(BSTree* tree, int* data, int length);
 
 void BST_destory(BSTree* tree);
+
 
 // Æ½ºâ¶þ²æÊ÷(Balanced Binary Tree)
 //

@@ -7,8 +7,33 @@
 #include "SearchAlgorithms.h"
 #include "BinarySearchTree.h"
 
-//#define SORT_TEST
-#define SEARCH_TEST
+//#define SORT_TEST		// 启动排序测试
+#define SEARCH_TEST		// 启动查找测试
+
+//==================================================================
+//					工具函数
+//==================================================================
+
+// 打印数组
+// 
+void print_array(const int* a, int length, const char* prefix)
+{
+	assert(a && length >= 0);
+
+	if (prefix) {
+		printf("%s", prefix);
+	}
+
+	for (int i = 0; i < length; i++) {
+		printf("%d ", a[i]);
+	}
+
+	printf("\n");
+}
+
+//==================================================================
+//					测试各种排序算法
+//==================================================================
 
 typedef void (*Sort_Function)(int* array, int length);
 
@@ -32,22 +57,9 @@ SortFucntionInfo sort_function_list[] = {
 	{"", NULL}
 };
 
-void print_array(const int* a, int length, const char* prefix)
-{
-	assert(a && length >= 0);
-
-	if (prefix) {
-		printf("%s", prefix);
-	}
-
-	for (int i = 0; i < length; i++) {
-		printf("%d ", a[i]);
-	}
-
-	printf("\n");
-}
-
-void test_sort(Sort_Function func)
+// 测试某种排序算法
+//
+void test_sort_function(Sort_Function func)
 {
 	const int length = 11;
 	const int count = 2;
@@ -67,62 +79,110 @@ void test_sort(Sort_Function func)
 	}
 }
 
+// 测试各种排序算法
+//
+void test_sort()
+{
+	for (int i = 0; sort_function_list[i].func != NULL; ++i) {
+		printf("\n=== %s ===\n", sort_function_list[i].name);
+		test_sort_function(sort_function_list[i].func);
+	}
+}
+
+//==================================================================
+//					测试各种查找算法
+//==================================================================
+
+void test_sequential_search();
+void test_binary_search();
+void test_blocking_search();
+void test_open_address_hash_search();
+void test_link_hash_search();
+void test_binary_tree_search();
+
+typedef void (*Test_Search_Function)();
+
+struct TestSearchFucntionInfo {
+	char * name;
+	Test_Search_Function func;
+};
+
+TestSearchFucntionInfo test_search_function_list[] = {
+	{"顺序查找",				test_sequential_search},
+	{"二分查找",				test_binary_search},
+	{"分块查找",				test_blocking_search},
+	{"开放地址法哈希/散列查找", test_open_address_hash_search},
+	{"拉链法哈希/散列查找",		test_link_hash_search},
+	{"二叉查找树查找",			test_binary_tree_search},
+	{"", NULL},
+};
+
+// 测试各种查找算法
+//
 void test_search()
 {
+	for (int i = 0; test_search_function_list[i].func != NULL; ++i) {
+		printf("\n=== %s ===\n", test_search_function_list[i].name);
+		(test_search_function_list[i].func)();
+	}
+}
+
+// 测试顺序查找
+//
+void test_sequential_search()
+{
 	const int length = 11;
-	const int count = 3;
-	int array[count][length] = {
-		{65, 32, 49, 10, 8, 72, 27, 42, 18, 58, 91},
+	int array[length] = {65, 32, 49, 10, 18, 72, 27, 42, 18, 58, 91};
 
-		// 二分查找要求序列有序
-		{8, 10, 18, 27, 32, 43, 49, 58, 65, 72, 96},
-		
-		// 分块查找要求序列分块有序: 块长为 3，共 4 块 
-		{10, 8, 18, 43, 27, 32, 58, 49, 65, 72, 69},
-	};
+	int key1 = 72;
+	int key2 = 55;
+	int pos;
 
+	print_array(array, length, " data: ");
 
-	int pos, key1, key2;
-	int* testArray;
-
-	//////////////////////////////////////////////////////////
-	// 测试顺序查找
-	//////////////////////////////////////////////////////////
-	testArray = array[0];
-	key1 = 72;
-	key2 = 55;
-
-	printf("\n=== 顺序查找 ===\n");
-	print_array(testArray, length, " data: ");
-	pos = sequential_search(testArray, length, key1);
+	pos = sequential_search(array, length, key1);
 	printf(" try searching %d, index is %d\n", key1, pos);
-	pos = sequential_search(testArray, length, key2);
+
+	pos = sequential_search(array, length, key2);
 	printf(" try searching %d, index is %d\n", key2, pos);
+}
 
-	//////////////////////////////////////////////////////////
-	// 测试二分查找
-	//////////////////////////////////////////////////////////
-	testArray = array[1];
-	key1 = 27;
-	key2 = 55;
+// 测试二分查找
+//
+void test_binary_search()
+{
+	// 二分查找要求序列有序
+	const int length = 11;
+	int array[length] = {8, 10, 18, 27, 32, 43, 49, 58, 65, 72, 96};
 
-	printf("\n=== 二分查找 ===\n");
-	print_array(testArray, length, " data: ");
-	pos = binary_search(testArray, length, key1);
+	int key1 = 72;
+	int key2 = 55;
+	int pos;
+
+	print_array(array, length, " data: ");
+
+	pos = binary_search(array, length, key1);
 	printf(" try searching %d, index is %d\n", key1, pos);
-	pos = binary_search(testArray, length, key2);
-	printf(" try searching %d, index is %d\n", key2, pos);
 
-	//////////////////////////////////////////////////////////
-	// 测试分块查找
-	//////////////////////////////////////////////////////////
-	testArray = array[2];
-	key1 = 72;
-	key2 = 55;
-	
-	// 创建索引表
-	//{10, 8, 18, 43, 27, 32, 58, 49, 65, 72},
-	IndexNode indexNode[4];
+	pos = binary_search(array, length, key2);
+	printf(" try searching %d, index is %d\n", key2, pos);
+}
+
+// 测试分块查找
+//
+void test_blocking_search()
+{
+	// 分块查找要求序列分块有序: 块长为 3，共 4 块
+	const int length = 11;
+	int array[length] = {10, 8, 18, 43, 27, 32, 58, 49, 65, 72, 69};
+
+	int key1 = 72;
+	int key2 = 55;
+	int pos;
+
+	// 创建分块索引表：块长为 3，共 4 块。
+	const int indexTableLength = 4;
+	IndexNode indexNode[indexTableLength];
 	indexNode[0].key = 18;
 	indexNode[0].index = 2;
 	indexNode[1].key = 43;
@@ -132,19 +192,27 @@ void test_search()
 	indexNode[3].key = 72;
 	indexNode[3].index = 9;
 
-	printf("\n=== 分块查找 ===\n");
-	print_array(testArray, length, " data: ");
-	pos = blocking_search(testArray, length, indexNode, 4, key1);
-	printf(" try searching %d, index is %d\n", key1, pos);
-	pos = blocking_search(testArray, length, indexNode, 4,  key2);
-	printf(" try searching %d, index is %d\n", key2, pos);
+	print_array(array, length, " data: ");
 
-	//////////////////////////////////////////////////////////
-	// 测试采用开放地址法的散列查找
-	//////////////////////////////////////////////////////////
-	testArray = array[2];
-	key1 = 72;
-	key2 = 55;
+	pos = blocking_search(array, length, indexNode, indexTableLength, key1);
+	printf(" try searching %d, index is %d\n", key1, pos);
+
+	pos = blocking_search(array, length, indexNode, indexTableLength,  key2);
+	printf(" try searching %d, index is %d\n", key2, pos);
+}
+
+// 测试采用开放地址法的哈希查找
+// 
+void test_open_address_hash_search()
+{
+	const int length = 11;
+	int array[length] = {65, 32, 49, 10, 18, 72, 27, 42, 18, 58, 91};
+
+	int pos;
+	int key1 = 72;
+	int key2 = 55;
+
+	print_array(array, length, " data: ");
 
 	// 换成别的 hash 函数试试
 	Hash_Function hashFunc = hash_remiander;	
@@ -154,72 +222,126 @@ void test_search()
 	Conflict_Resolution conflictResolution = Conflict_Resolution_Linear;
 	conflictResolution = Conflict_Resolution_Quadratic;
 	//conflictResolution = Conflict_Resolution_Double_Hash;
-
-	printf("\n=== 开放地址法散列查找 ===\n");
-	print_array(testArray, length, " data: ");
-
+	
 	// 创建开放地址法散列表
 	int tableLength = 17;	// 对于二重探查散列法，散列表长取素数或奇数为佳
 	int* hashTable = (int*)malloc(tableLength * sizeof(int));
+	if (!hashTable) {
+		printf("Error: out of memory!\n");
+		return;
+	}
+
 	create_open_address_hash_table(
-		hashTable, tableLength, 
-		testArray, length, 
+		hashTable, tableLength, array, length, 
 		hashFunc, conflictResolution);
 
 	pos = open_address_hash_search(key1, hashTable, tableLength, 
-				hashFunc, conflictResolution);
+		hashFunc, conflictResolution);
 	printf(" try searching %d, index at hash is table %d\n", key1, pos);
+	
 	pos = open_address_hash_search(key2, hashTable, tableLength,
-				hashFunc, conflictResolution);
+		hashFunc, conflictResolution);
 	printf(" try searching %d, index at hash is table %d\n", key2, pos);
 
 	// 删除开放地址法散列表
 	free(hashTable);
 	hashTable = NULL;
+}
 
-	//////////////////////////////////////////////////////////
-	// 测试采用拉链法的散列查找
-	//////////////////////////////////////////////////////////
-	testArray = array[2];
-	key1 = 72;
-	key2 = 55;
+// 测试采用拉链法的哈希查找
+//
+void test_link_hash_search()
+{
+	const int length = 11;
+	int array[length] = {65, 32, 49, 10, 18, 72, 27, 42, 18, 58, 91};
+
+	int key1 = 72;
+	int key2 = 55;
+	int pos;
+
+	print_array(array, length, " data: ");
 
 	// 换成别的 hash 函数试试
-	hashFunc = hash_remiander;	
-	//hashFunc = hash_multi_round_off;	
-
-	printf("\n=== 拉链法散列查找 ===\n");
-	print_array(testArray, length, " data: ");
+	Hash_Function hashFunc = hash_remiander;	
+	//hashFunc = hash_multi_round_off;		
 
 	// 创建拉链法散列表
-	tableLength = 7;
+	int tableLength = 7;
 	Hash_Node* linkHashTable = NULL;
-	create_link_hash_table(
-		&linkHashTable, tableLength, testArray, length, hashFunc);
 
+	create_link_hash_table(
+		&linkHashTable, tableLength, array, length, hashFunc);
+	if (!linkHashTable){
+		printf("Failed to create link hash table!\n");
+		return;
+	}
+	
 	pos = link_hash_search(key1, linkHashTable, tableLength, hashFunc);
 	printf(" try searching %d, index at hash table is %d\n", key1, pos);
+	
 	pos = link_hash_search(key2, linkHashTable, tableLength, hashFunc);
 	printf(" try searching %d, index at hash table is %d\n", key2, pos);
 
+	// 销毁拉链法散列表
 	destroy_link_hash_table(linkHashTable, tableLength);
-
-
 }
 
+// 测试二叉查找树查找
+//
+void test_binary_tree_search()
+{
+	// 二叉查找树要求记录的关键字唯一，所以不能有相同的记录
+	const int length = 11;
+	int array[length] = {65, 32, 49, 10, 8, 72, 27, 42, 18, 58, 91};
+
+	int key1 = 72;
+	int key2 = 55;
+
+	print_array(array, length, " data: ");
+
+	BSTree tree = NULL;
+	BSTNode* node = NULL;
+
+	BST_create(&tree, array, length);
+	if (!tree) {
+		printf("Failed to create binary search tree!\n");
+		return;
+	}
+
+	node = BST_search(tree, key1);
+	printf("%s %d in binary search tree!\n",
+		(NULL == node) ? "Could not find" : "Yeah! Found", key1);
+
+	node = BST_search(tree, key2);
+	printf("%s %d in binary search tree!\n",
+		(NULL == node) ? "Could not find" : "Found", key2);
+
+	printf("Insert %d to binary search tree!\n", key2);
+	BST_insert(&tree, key2);
+
+	node = BST_search(tree, key2);
+	printf("Now, %s %d in binary search tree!\n",
+		(NULL == node) ? "Could not find" : "Yeah! Found", key2);
+
+	BST_destory(&tree);
+
+	assert(NULL == tree);
+}
+
+//==================================================================
+//					MAIN
+//==================================================================
 int main(int argc, const char* argv[])
 {
 #ifdef SORT_TEST
-	for (int i = 0; sort_function_list[i].func != NULL; i++) {
-		printf("\n=== %s ===\n", sort_function_list[i].name);
-		test_sort(sort_function_list[i].func);
-	}
+	test_sort();
 #endif
 
 #ifdef SEARCH_TEST
 	test_search();
 #endif
 
+	printf("\n测试结束\n");
 	system("pause");
 	return 0;
 }

@@ -55,8 +55,9 @@ int blocking_search(
 	int indexTableLength,
 	int key);
 
+
 /**
- * 算法名称	 ：线性散列查找
+ * 算法名称	 ：散列查找
  * 算法描述	 ：用线性散列函数将关键字映射到散列表中的每个位置，直接在散列表中取值
  * 时间复杂度 ：O(1)，以空间换时间
  * 空间复杂度 ：O(m)，m 为散列表长度
@@ -87,7 +88,7 @@ int hash_remiander(int key, int hashTableLength);
 int hash_multi_round_off(int key, int hashTableLength);
 
 //=========================================================
-//					开放地址法散列
+//					开放地址法哈希查找
 //=========================================================
 // 创建采用开放地址法的散列表
 void create_open_address_hash_table(
@@ -109,7 +110,7 @@ int open_address_hash_search(
 	int zeroValue = -1);								// 设置为序列中没有的值（零值）
 
 //=========================================================
-//					拉链法散列
+//					拉链法哈希查找
 //=========================================================
 struct Hash_Node{
 	int key;
@@ -137,7 +138,6 @@ int link_hash_search(
 	int tableLength,
 	Hash_Function hashFunc = hash_remiander,// 设置 hash 函数
 	int zeroValue = -1);					// 设置为序列中没有的值（零值）
-
 
 
 #endif // __SEARCH_ALGORITHMS_H__
