@@ -1,4 +1,4 @@
-#include "BinarySearchTree.h"
+#include "BinaryTree.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -204,7 +204,7 @@ void BBT_remove(BSTree* tree, int key)
 
 // 根据数组内容创建二叉树
 //
-void BST_create(BSTree* tree, int* data, int length)
+void BST_create(BSTree* tree, const int* data, int length)
 {
 	assert(tree && length >= 0);
 
