@@ -1,0 +1,57 @@
+#summary One-sentence summary of this page.
+#labels Featured,Phase-Implementation,Phase-Requirements
+
+= Introduction =
+
+This project is about algorithms, such as sort, search, tree, A-Star, etc.
+
+= Details =
+
+== Completed ==
+
+* Sort
+ # insert_sort
+ # shell_sort
+ # bubble_sort
+ # quick_sort
+ # select_sort
+ # heap_sort
+ # merge_sort
+ # bucket_sort
+ # radix_sort
+
+* Search
+ # sequential_search
+ # binary_search
+ # blocking_search
+ # hash_search
+ # binary_tree_search
+
+=============================================================
+
+
+= 简介 =
+
+这个项目是关于算法的，如排序，查找，tree，A-Star等常用算法。
+
+=  详情 =
+
+== 已完成算法 ==
+
+* 排序
+ # 插入排序
+ # 希尔排序
+ # 冒泡排序
+ # 快速排序
+ # 选择排序
+ # 堆排序
+ # 归并排序
+ # 桶/箱排序
+ # 基数排序
+
+* 查找
+ # 顺序查找
+ # 二分查找
+ # 块排序
+ # 哈希查找
+ # 二叉树查找
