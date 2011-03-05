@@ -19,14 +19,14 @@ BTNode* BTree_search(const BTree tree, int key, int* pos)
 {
 	assert(tree);
 	
-	int i = 1;
+	int i = 0;
 
-	while (i <= tree->keynum && key > tree->key[i]) {
+	while (i < tree->keynum && key > tree->key[i]) {
 		++i;
 	}
 
 	// Find the key.
-	if (i <= tree->keynum && tree->key[i] == key) {
+	if (i < tree->keynum && tree->key[i] == key) {
 		if (pos) {
 			*pos = i;
 		}
@@ -40,105 +40,106 @@ BTNode* BTree_search(const BTree tree, int key, int* pos)
 	}
 
 	// 节点内查找失败，但 tree->key[i - 1]< key < tree->key[i]，
-	// 下一个查找的结点应为 child[i - 1]
+	// 下一个查找的结点应为 child[i]
 
-	// 递归地继续查找于树 tree->child[i - 1]
-	return BTree_search(tree->child[i - 1], key, pos);
+	// 递归地继续查找于树 tree->child[i]
+	return BTree_search(tree->child[i], key, pos);
 }
 
-// tree 是一个非满节点
-// child 是 tree 的第 i 个孩子节点，且是满的
-void BTree_split_child(BTNode* parent, int i, BTNode* node)
+// parent 是一个非满的父节点
+// node 是 tree 孩子表中下标为 index 的孩子节点，且是满的
+void BTree_split_child(BTNode* parent, int index, BTNode* node)
 {
 	assert(parent && node);
 
-	int j;
+	int i;
 
-	// creat a new node
-	//
+	// 创建新节点，存储 node 中后半部分的数据
 	BTNode* newNode = (BTNode*)calloc(sizeof(BTNode), 1);
 	if (!newNode) {
 		printf("Error! out of memory!\n");
 		return;
 	}
-
+	
 	newNode->isLeaf = true;
+	newNode->keynum = BTree_T - 1;
 
-	// get the position of slit
-	//
-	int mid = BTree_T;
-
-	// set newNode(bigger children of child node)
-	//
-	newNode->keynum = mid - 1;
-	for (j = 0; j < newNode->keynum; ++j) {
-		newNode->key[j] = node->key[mid + j];
+	// 拷贝 node 后半部分关键字
+	for (i = 0; i < newNode->keynum; ++i){
+		newNode->key[i] = node->key[BTree_T + i];
 	}
 
+	// 如果 node 不是叶子节点，拷贝 node 后半部分的孩子节点
 	if (!node->isLeaf) {
-		for (j = 0; j < mid - 1; ++j) {
-			newNode->child[j] = node->child[mid + j];
+		for (i = 0; i < BTree_T; i++) {
+			newNode->child[i] = node->child[BTree_T + i];
 		}
 	}
 
-	// reset child(smaller children of child node)
-	//
-	node->keynum = mid - 1;
+	// 将 node 分裂出 newNode 之后，里面的数据减半
+	node->keynum = BTree_T - 1;
 
-	// adjust tree
-	//
-	for (j = parent->keynum; j >= i; --j) {
-		parent->child[j + 1] = parent->child[j]; 
+	// 调整父节点
+	for (i = parent->keynum; i > index; --i) {
+		parent->child[i + 1] = parent->child[i]; 
 	}
 
-	parent->child[i] = newNode;
+	parent->child[index + 1] = newNode;
 
-	for (j = parent->keynum - 1; j >= i; --j) {
-		parent->key[j + 1] = parent->key[j];
+	for (i = parent->keynum - 1; i >= index; --i) {
+		parent->key[i + 1] = parent->key[i];
 	}
 
-	parent->key[i - 1] = node->key[mid - 1];
+	parent->key[index] = node->key[BTree_T - 1];
 	++parent->keynum;
 
-	// clear node
+	// 清除 node 中的中后部数据
 	//
-	for (j = mid - 1; j < BTree_N; ++j) {
-		node->key[j] = '-';
-		node->child[j] = NULL;
+	for (i = BTree_T - 1; i < BTree_N; ++i) {
+		node->key[i] = '-';
+		node->child[i + 1] = NULL;
 	}
 }
 
 void BTree_insert_nonfull(BTNode* node, int key)
 {
-	int i = node->keynum;
+	assert(node);
+
+	int i;
+
+	// 节点是叶子节点，直接插入（注意：节点至少已有一个数据）
 	if (node->isLeaf) {
-		while (i >= 1 && key < node->key[i - 1]) {
-			node->key[i] = node->key[i - 1];
+		assert(node->keynum >= 1);
+
+		i = node->keynum - 1;
+		while (i >= 0 && key < node->key[i]) {
+			node->key[i + 1] = node->key[i];
 			--i;
 		}
-
-		node->key[i] = key;
+		
+		node->key[i + 1] = key;
 		++node->keynum;
 	}
 
+	// 节点是内部节点
 	else {
-		// find the child to be inserted.
+		// 查找插入的位置
+		i = node->keynum - 1;
 		while (i >= 0 && key < node->key[i]) {
 			--i;
 		}
-		
-		//++i;
 
-		// child is full
-		//
+		++i;
+
+		// 如果该孩子节点已满，分裂调整值
 		if (node->child[i]->keynum == BTree_N) {
-			BTree_split_child(node, i + 1, node->child[i]);
+			BTree_split_child(node, i, node->child[i]);
 
 			if (key > node->key[i]) {
 				++i;
-			}	
+			}
 		}
-		
+
 		BTree_insert_nonfull(node->child[i], key);
 	}
 }
@@ -148,6 +149,7 @@ void BTree_insert(BTree* tree, int key)
 	BTNode* node;
 	BTNode* root = *tree;
 
+	// 树为空
 	if (NULL == root) {
 		root = (BTNode*)calloc(sizeof(BTNode), 1);
 		if (!root) {
@@ -162,22 +164,26 @@ void BTree_insert(BTree* tree, int key)
 		return;
 	}
 
+	// 节点已满，需要进行分裂调整
 	if (root->keynum == BTree_N) {
+		// 产生新节点当作根
 		node = (BTNode*)calloc(sizeof(BTNode), 1);
 		if (!node) {
 			printf("Error! out of memory!\n");
 			return;
 		}
-
+	
 		*tree = node;
 		node->isLeaf = false;
 		node->keynum = 0;
 		node->child[0] = root;
 
-		BTree_split_child(node, 1, root);
+		BTree_split_child(node, 0, root);
 
 		BTree_insert_nonfull(node, key);
 	}
+
+	// 节点未满，在当前节点中插入 key
 	else {
 		BTree_insert_nonfull(root, key);
 	}
@@ -193,6 +199,10 @@ void BTree_create(BTree* tree, const int* data, int length)
 {
 	assert(tree);
 
+	int i;
+	for (i = 0; i < length; i++) {
+		BTree_insert(tree, data[i]);
+	}
 }
 
 void BTree_destory(BTree* tree)

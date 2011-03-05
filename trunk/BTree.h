@@ -6,8 +6,8 @@
 
 // 定义B- 树的最小度数
 // 每个节点中关键字的最大数目 BTree_N = 2 * BTree_T - 1
-#define	BTree_T	3
-#define BTree_N	(BTree_T * 2 - 1)
+#define	BTree_T		3
+#define BTree_N		(BTree_T * 2 - 1)
 
 struct BTNode {
 	int	keynum;						// 结点中关键字的个数，keynum <= BTree_N
