@@ -372,20 +372,28 @@ void print_btree(BTree tree, int her = 1)
 
 void test_btree()
 {
-	BTree tree = NULL;
-	
-	const int length = 19;
+	const int length = 20;
 	int array[length] = {
 		'G', 'M', 'P', 'X', 'A', 'C', 'D', 'E', 'J', 'K',
-		'N', 'O', 'R', 'S', 'T', 'U', 'V', 'Y', 'Z'
+		'N', 'O', 'R', 'S', 'T', 'U', 'V', 'Y', 'Z', 'F'
 	};
 
+	BTree tree = NULL;
+
+#if 1
+	BTree_create(&tree, array, length);
+
+	print_btree(tree);
+#else	
 	for (int i = 0; i < length; i++) {
 		BTree_insert(&tree, array[i]);
 
 		printf("\n\n === %d nodes ===", i + 1);
 		print_btree(tree);
 	}
+#endif
+
+	BTree_destory(&tree);
 }
 
 //==================================================================
