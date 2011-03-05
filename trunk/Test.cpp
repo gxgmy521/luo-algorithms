@@ -5,10 +5,12 @@
 #include <assert.h>
 #include "SortAlgorithms.h"
 #include "SearchAlgorithms.h"
-#include "BinarySearchTree.h"
+#include "BinaryTree.h"
+#include "BTree.h"
 
 //#define SORT_TEST		// 启动排序测试
-#define SEARCH_TEST		// 启动查找测试
+//#define SEARCH_TEST		// 启动查找测试
+#define BTREE_TEST		// 测试 B- 树
 
 //==================================================================
 //					工具函数
@@ -286,8 +288,10 @@ void test_link_hash_search()
 	destroy_link_hash_table(linkHashTable, tableLength);
 }
 
-// 测试二叉查找树查找
-//
+//==================================================================
+//					测试二叉查找树
+//==================================================================
+
 void test_binary_tree_search()
 {
 	// 二叉查找树要求记录的关键字唯一，所以不能有相同的记录
@@ -342,6 +346,49 @@ void test_binary_tree_search()
 }
 
 //==================================================================
+//					测试 B- 树
+//==================================================================
+
+void print_btree(BTree tree, int her = 1) 
+{
+	int i;
+	BTNode* node = tree;
+	
+	if (node) {
+		printf("\n (%d) %d node : ", her, node->keynum);
+
+		for (i = 1; i <= node->keynum; ++i) {
+			printf("%c ", node->key[i]);
+		}
+
+		++her;
+		for (i = 0 ; i <= BTree_N; i++) {
+			if (node->child[i]) {
+				print_btree(node->child[i], her);
+			}
+		}
+	}
+}
+
+void test_btree()
+{
+	BTree tree = NULL;
+	
+	const int length = 20;
+	int array[length] = {
+		'a', 'g', 'f', 'b', 'k', 'd', 'h', 'm', 'j', 'e',
+		's', 'i', 'r', 'x', 'c', 'l', 'n', 't', 'u', 'p'
+	};
+
+	for (int i = 0; i < length; i++) {
+		BTree_insert(&tree, array[i]);
+
+		printf("\n === %d node ===\n", i + 1);
+		print_btree(tree);
+	}
+}
+
+//==================================================================
 //					MAIN
 //==================================================================
 int main(int argc, const char* argv[])
@@ -352,6 +399,10 @@ int main(int argc, const char* argv[])
 
 #ifdef SEARCH_TEST
 	test_search();
+#endif
+
+#ifdef BTREE_TEST
+	test_btree();
 #endif
 
 	printf("\n测试结束\n");

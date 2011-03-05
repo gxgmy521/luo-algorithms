@@ -170,26 +170,8 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Test"
-			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
-			>
-			<File
-				RelativePath=".\Test.cpp"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="Search"
 			>
-			<File
-				RelativePath=".\BinarySearchTree.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\BinarySearchTree.h"
-				>
-			</File>
 			<File
 				RelativePath=".\SearchAlgorithms.cpp"
 				>
@@ -211,6 +193,30 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Tree"
+			>
+			<File
+				RelativePath=".\BinaryTree.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\BinaryTree.h"
+				>
+			</File>
+			<File
+				RelativePath=".\BTree.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\BTree.h"
+				>
+			</File>
+		</Filter>
+		<File
+			RelativePath=".\Test.cpp"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
