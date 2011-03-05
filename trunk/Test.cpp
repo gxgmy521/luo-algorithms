@@ -357,7 +357,7 @@ void print_btree(BTree tree, int her = 1)
 	if (node) {
 		printf("\n (%d) %d node : ", her, node->keynum);
 
-		for (i = 1; i <= node->keynum; ++i) {
+		for (i = 0; i < node->keynum; ++i) {
 			printf("%c ", node->key[i]);
 		}
 
@@ -374,16 +374,16 @@ void test_btree()
 {
 	BTree tree = NULL;
 	
-	const int length = 20;
+	const int length = 19;
 	int array[length] = {
-		'a', 'g', 'f', 'b', 'k', 'd', 'h', 'm', 'j', 'e',
-		's', 'i', 'r', 'x', 'c', 'l', 'n', 't', 'u', 'p'
+		'G', 'M', 'P', 'X', 'A', 'C', 'D', 'E', 'J', 'K',
+		'N', 'O', 'R', 'S', 'T', 'U', 'V', 'Y', 'Z'
 	};
 
 	for (int i = 0; i < length; i++) {
 		BTree_insert(&tree, array[i]);
 
-		printf("\n === %d node ===\n", i + 1);
+		printf("\n\n === %d nodes ===", i + 1);
 		print_btree(tree);
 	}
 }
