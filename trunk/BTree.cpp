@@ -48,40 +48,6 @@ void BTree_print(BTree tree, int her)
 	}
 }
 
-BTNode* BTree_search(const BTree tree, int key, int* pos)
-{
-	assert(tree);
-	
-	int i = 0;
-
-	while (i < tree->keynum && key > tree->key[i]) {
-		++i;
-	}
-
-	// Find the key.
-	if (i < tree->keynum && tree->key[i] == key) {
-		if (pos) {
-			*pos = i;
-		}
-
-		return tree;
-	}
-
-	// tree 为叶子节点，找不到 key，查找失败返回
-	if (tree->isLeaf) {
-		return NULL;
-	}
-
-	// 节点内查找失败，但 tree->key[i - 1]< key < tree->key[i]，
-	// 下一个查找的结点应为 child[i]
-
-	// 从磁盘读取第 i 个孩子的数据
-	disk_read(&tree->child[i]);
-
-	// 递归地继续查找于树 tree->child[i]
-	return BTree_search(tree->child[i], key, pos);
-}
-
 // parent 是一个非满的父节点
 // node 是 tree 孩子表中下标为 index 的孩子节点，且是满的
 void BTree_split_child(BTNode* parent, int index, BTNode* node)
@@ -148,10 +114,8 @@ void BTree_insert_nonfull(BTNode* node, int key)
 
 	int i;
 
-	// 节点是叶子节点，直接插入（注意：节点至少已有一个数据）
+	// 节点是叶子节点，直接插入
 	if (node->isLeaf) {
-		assert(node->keynum >= 1);
-
 		i = node->keynum - 1;
 		while (i >= 0 && key < node->key[i]) {
 			node->key[i + 1] = node->key[i];
@@ -242,8 +206,260 @@ void BTree_insert(BTree* tree, int key)
 
 void BTree_remove(BTree* tree, int key)
 {
+	// B-数的保持条件之一：
+	// 非根节点的非叶子节点的关键字数目不能少于 BTree_T - 1
+
+	int i, j, index;
+	BTNode *root = *tree;
+	BTNode *node = root;
+	BTNode *prevChild, *nextChild, *child;
+	int prevKey, nextKey;
+
+	if (!root) {
+		printf("Failed to remove %c, it is not in the tree!\n", key);
+		return;
+	}
+	
+	index = 0;
+	while (index < node->keynum && key > node->key[index]) {
+		++index;
+	}
+
+	// Find the key.
+	if (index < node->keynum && node->key[index] == key) {
+		// 1
+		// 所在节点是叶子节点，直接删除
+		if (node->isLeaf) {
+			for (i = index; i < node->keynum; i++) {
+				node->key[i] = node->key[i + 1];
+				node->child[i + 1] = node->child[i + 2];
+			}
+
+			node->key[node->keynum - 1] = 0;
+			node->child[node->keynum] = NULL;
+			--node->keynum;
+
+			if (node->keynum == 0) {
+				// todo:
+			}
+		}
+
+		// 2a
+		// 如果位于 key 前的子节点的 key 数目 > BTree_T，
+		// 在其中找 key 的前驱，用前驱的 key 值赋予 key，
+		// 然后递归删除前驱
+		else if (node->child[index]->keynum > BTree_T) {
+			prevChild = node->child[index];
+			prevKey = prevChild->key[prevChild->keynum - 1];
+			node->key[index] = prevKey;
+
+			BTree_remove(&prevChild, prevKey);
+		}
+
+		// 2b
+		// 如果位于 key 后的子节点的 key 数目 > BTree_T，
+		// 在其中找 key 的后继，用后继的 key 值赋予 key，
+		// 然后递归删除后继
+		else if (node->child[index + 1]->keynum > BTree_T) {
+			nextChild = node->child[index + 1];
+			nextKey = nextChild->key[nextChild->keynum - 1];
+			node->key[index] = nextKey;
+
+			BTree_remove(&nextChild, nextKey);
+		}
+
+		// 2c
+		// 前驱和后继都只包含 BTree_T - 1 个节点，
+		// 将 key 插入前驱孩子节点，并将后继孩子节点合并到前驱孩子节点，
+		// 删除后继孩子节点，在 node 中移除 key 和指向后继孩子节点的指针
+		// 在前驱孩子节点中递归删除 key
+		else if (node->child[index]->keynum == BTree_T - 1
+			&& node->child[index + 1]->keynum == BTree_T - 1){
+			prevChild = node->child[index];
+			nextChild = node->child[index + 1];
+			
+			prevChild->key[prevChild->keynum] = key;
+			prevChild->child[prevChild->keynum + 1] = nextChild->child[0];
+			++prevChild->keynum;
+
+			// 合并
+			j = prevChild->keynum;
+			for (i = 0; i < nextChild->keynum; i++, j++) {
+				prevChild->key[j] = nextChild->key[i];
+				prevChild->child[j + 1] = nextChild->child[j + 1];
+				++prevChild->keynum;
+			}
+
+			// 在 node 中移除 key 以及指向后继孩子节点的指针
+			for (i = index; i < node->keynum; i++) {
+				node->key[i] = node->key[i + 1];
+				node->child[i + 1] = node->child[i + 2];
+			}
+
+			node->key[node->keynum - 1] = 0;
+			node->child[node->keynum] = NULL;
+			--node->keynum;
+
+			free(nextChild);
+
+			// 在前驱孩子节点中递归删除 key
+			BTree_remove(&prevChild, key);
+		}
+	}
+
+	// 3，key 不在内节点 node 中，则应当在某个包含 key 的子节点中。
+	//  key < node->key[index], 所以 key 应当在孩子节点 node->child[index] 中
+	else {
+		child = node->child[index];
+
+		if (child->keynum == BTree_T - 1) {
+			prevChild = NULL;
+			nextChild = NULL;
+
+			if (index - 1 >= 0) {
+				prevChild = node->child[index - 1];
+			}
+			
+			if (index + 1 <= node->keynum) {
+				nextChild = node->child[index + 1];
+			}
+
+			// 3a 如果所在孩子节点相邻的兄弟节点中有节点至少包含 BTree_t 个关键字
+			// 将 node 的一个关键字下降到 child 中，将相邻兄弟节点中一个节点上升到
+			// node 中，递归在 child 中查找
+			if ((prevChild && prevChild->keynum > BTree_T)
+				|| (nextChild && nextChild->keynum > BTree_T)) {
+				
+				if (nextChild && nextChild->keynum > BTree_T) {
+					child->key[child->keynum] = node->key[index];
+					child->child[child->keynum + 1] = nextChild->child[0];
+					++child->keynum;
+
+					node->key[index] = nextChild->key[0];
+
+					for (j = 0; j < nextChild->keynum - 1; ++j) {
+						nextChild->key[j] = nextChild->key[j + 1];
+						nextChild->child[j] = nextChild->child[j + 1];
+					}
+					--nextChild->keynum;
+				}
+				else {
+					for (j = child->keynum; j > 0; --j) {
+						child->key[j] = child->key[j - 1];
+						child->child[j + 1] = child->child[j];
+					}
+					child->child[1] = child->child[0];
+					child->child[0] = prevChild->child[prevChild->keynum];
+					child->key[0] = node->key[index - 1];
+					++child->keynum;
+
+					node->key[index - 1] = prevChild->key[prevChild->keynum - 1];
+
+					--prevChild->keynum;
+				}
+			}
+
+			// 3b, 如果所在孩子节点相邻的兄弟节点都只包含 BTree_t - 1 个关键字
+			// 将 child 与其一相邻节点合并，并将 node 中的一个关键字下降到合并节点中
+			// 如果 node 为空，删之，并调整根
+			else if ((!prevChild || (prevChild && prevChild->keynum == BTree_T - 1))
+				&& ((!nextChild || nextChild && nextChild->keynum == BTree_T - 1))) {
+				if (prevChild && prevChild->keynum == BTree_T - 1) {
+					prevChild->key[prevChild->keynum] = node->key[index - 1];
+					prevChild->child[prevChild->keynum + 1] = child->child[0];
+					++prevChild->keynum;
+
+					for (j = 0; j < child->keynum; ++j) {
+						prevChild->key[prevChild->keynum] = child->key[j];
+						prevChild->child[prevChild->keynum + 1] = child->child[j + 1];
+						++prevChild->keynum;
+					}
+						
+					for (j = index - 1; j < node->keynum - 1; j++) {
+						node->key[j] = node->key[j + 1];
+						node->child[j + 1] = node->child[j + 2];
+					}
+					--node->keynum;
+
+					if (node->keynum == 0) {
+						if (*tree == node) {
+							*tree = prevChild;
+						}
+
+						free(node);
+					}
+
+					free(child);
+					
+					child = prevChild;
+				}
+
+				else if (nextChild && nextChild->keynum == BTree_T - 1) {
+					child->key[child->keynum] = node->key[index];
+					child->child[child->keynum + 1] = nextChild->child[0];
+					++child->keynum;
+
+					for (j = 0; j < nextChild->keynum; ++j) {
+						child->key[child->keynum] = nextChild->key[j];
+						child->child[child->keynum + 1] = nextChild->child[j + 1];
+						++child->keynum;
+					}
+
+					for (j = index; j < node->keynum - 1; j++) {
+						node->key[j] = node->key[j + 1];
+						node->child[j + 1] = node->child[j + 2];
+					}
+					--node->keynum;
+
+					if (node->keynum == 0) {
+						if (*tree == node) {
+							*tree = prevChild;
+						}
+
+						free(node);
+					}
+
+					free(nextChild);
+				}
+			}
+		}
+
+		BTree_remove(&child, key);
+	}
+}
+
+BTNode* BTree_search(const BTree tree, int key, int* pos)
+{
 	assert(tree);
 
+	int i = 0;
+
+	while (i < tree->keynum && key > tree->key[i]) {
+		++i;
+	}
+
+	// Find the key.
+	if (i < tree->keynum && tree->key[i] == key) {
+		if (pos) {
+			*pos = i;
+		}
+
+		return tree;
+	}
+
+	// tree 为叶子节点，找不到 key，查找失败返回
+	if (tree->isLeaf) {
+		return NULL;
+	}
+
+	// 节点内查找失败，但 tree->key[i - 1]< key < tree->key[i]，
+	// 下一个查找的结点应为 child[i]
+
+	// 从磁盘读取第 i 个孩子的数据
+	disk_read(&tree->child[i]);
+
+	// 递归地继续查找于树 tree->child[i]
+	return BTree_search(tree->child[i], key, pos);
 }
 
 void BTree_create(BTree* tree, const int* data, int length)
