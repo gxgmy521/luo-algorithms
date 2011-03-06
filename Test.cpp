@@ -361,6 +361,15 @@ void test_BTree_search(BTree tree, int key)
 		printf("在树中找不到关键字 %c\n", key);
 	}
 }
+
+void test_BTree_remove(BTree* tree, int key)
+{
+	printf("\n移除关键字 %c \n", key);
+	BTree_remove(tree, key);
+	BTree_print(*tree);
+	printf("\n");
+}
+
 void test_btree()
 {
 	const int length = 20;
@@ -396,12 +405,15 @@ void test_btree()
 	test_BTree_search(tree, key2);
 	
 	// 移除关键字
-	printf("\n插入关键字 %c \n", key1);
+#if 1
+	key2 = 'C';
+	test_BTree_remove(&tree, key2);
+	test_BTree_search(tree, key2);
 
-	BTree_remove(&tree, key1);
-	printf("\n");
-
-	test_BTree_search(tree, key1);
+	key2 = 'B';
+	test_BTree_remove(&tree, key2);
+	test_BTree_search(tree, key2);
+#endif
 
 	// 销毁
 	BTree_destory(&tree);
