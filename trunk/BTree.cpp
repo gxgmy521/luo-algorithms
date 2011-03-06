@@ -7,13 +7,46 @@
 
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-#define DEBUG_TREE
+//#define DEBUG_TREE
 
 #ifdef DEBUG_TREE
 #define debug_print(fmt,...) printf(fmt, ## __VA_ARGS__)
 #else
 #define debug_print(fmt,...)
 #endif
+
+void disk_write(BTNode* node)
+{
+	printf("向磁盘写入节点\n");
+}
+
+void disk_read(BTNode** node)
+{
+	printf("从磁盘读取节点\n");
+}
+
+void BTree_print(BTree tree, int her) 
+{
+	int i;
+	BTNode* node = tree;
+
+	if (node) {
+		printf("第 %d 层， %d node : ", her, node->keynum);
+
+		for (i = 0; i < node->keynum; ++i) {
+			printf("%c ", node->key[i]);
+		}
+
+		printf("\n");
+
+		++her;
+		for (i = 0 ; i <= BTree_N; i++) {
+			if (node->child[i]) {
+				BTree_print(node->child[i], her);
+			}
+		}
+	}
+}
 
 BTNode* BTree_search(const BTree tree, int key, int* pos)
 {
@@ -41,6 +74,9 @@ BTNode* BTree_search(const BTree tree, int key, int* pos)
 
 	// 节点内查找失败，但 tree->key[i - 1]< key < tree->key[i]，
 	// 下一个查找的结点应为 child[i]
+
+	// 从磁盘读取第 i 个孩子的数据
+	disk_read(&tree->child[i]);
 
 	// 递归地继续查找于树 tree->child[i]
 	return BTree_search(tree->child[i], key, pos);
@@ -94,11 +130,16 @@ void BTree_split_child(BTNode* parent, int index, BTNode* node)
 	++parent->keynum;
 
 	// 清除 node 中的中后部数据
-	//
-	for (i = BTree_T - 1; i < BTree_N; ++i) {
-		node->key[i] = '-';
-		node->child[i + 1] = NULL;
-	}
+	// 可以不处理，因为是通过 keynum 控制访问的
+// 	for (i = BTree_T - 1; i < BTree_N; ++i) {
+// 		node->key[i] = 0;
+// 		node->child[i + 1] = NULL;
+// 	}
+
+	// 写入磁盘
+ 	disk_write(parent);
+ 	disk_write(newNode);
+ 	disk_write(node);
 }
 
 void BTree_insert_nonfull(BTNode* node, int key)
@@ -119,6 +160,9 @@ void BTree_insert_nonfull(BTNode* node, int key)
 		
 		node->key[i + 1] = key;
 		++node->keynum;
+
+		// 写入磁盘
+		disk_write(node);
 	}
 
 	// 节点是内部节点
@@ -130,6 +174,9 @@ void BTree_insert_nonfull(BTNode* node, int key)
 		}
 
 		++i;
+
+		// 从磁盘读取孩子节点
+		disk_read(&node->child[i]);
 
 		// 如果该孩子节点已满，分裂调整值
 		if (node->child[i]->keynum == BTree_N) {
@@ -161,6 +208,10 @@ void BTree_insert(BTree* tree, int key)
 		root->key[0] = key;
 
 		*tree = root;
+
+		// 写入磁盘
+		disk_write(root);
+
 		return;
 	}
 
@@ -200,14 +251,43 @@ void BTree_create(BTree* tree, const int* data, int length)
 	assert(tree);
 
 	int i;
+
+#ifdef DEBUG_TREE
+	debug_print("\n 开始创建 B- 树，关键字为:\n");
 	for (i = 0; i < length; i++) {
-		BTree_insert(tree, data[i]);
+		printf(" %c ", data[i]);
 	}
+	debug_print("\n");
+#endif
+
+	
+	for (i = 0; i < length; i++) {
+#ifdef DEBUG_TREE
+		debug_print("\n插入关键字 %c:\n", data[i]);
+#endif
+		BTree_insert(tree, data[i]);
+
+#ifdef DEBUG_TREE
+		BTree_print(*tree);
+#endif
+	}
+
+	debug_print("\n");
 }
 
 void BTree_destory(BTree* tree)
 {
-	assert(tree);
+	int i;
+	BTNode* node = *tree;
 
+	if (node) {
+		for (i = 0; i <= node->keynum; i++) {
+			BTree_destory(&node->child[i]);
+		}
+
+		free(node);
+	}
+
+	*tree = NULL;
 }
 

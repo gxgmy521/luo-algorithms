@@ -348,28 +348,19 @@ void test_binary_tree_search()
 //==================================================================
 //					测试 B- 树
 //==================================================================
-
-void print_btree(BTree tree, int her = 1) 
+void test_BTree_search(BTree tree, int key)
 {
-	int i;
-	BTNode* node = tree;
-	
+	int pos = -1;
+	BTNode*	node = BTree_search(tree, key, &pos);
 	if (node) {
-		printf("\n (%d) %d node : ", her, node->keynum);
-
-		for (i = 0; i < node->keynum; ++i) {
-			printf("%c ", node->key[i]);
-		}
-
-		++her;
-		for (i = 0 ; i <= BTree_N; i++) {
-			if (node->child[i]) {
-				print_btree(node->child[i], her);
-			}
-		}
+		printf("在%s节点（包含 %d 个关键字）中找到关键字 %c，其索引为 %d\n",
+			node->isLeaf ? "叶子" : "非叶子",
+			node->keynum, key, pos);
+	}
+	else {
+		printf("在树中找不到关键字 %c\n", key);
 	}
 }
-
 void test_btree()
 {
 	const int length = 20;
@@ -379,20 +370,40 @@ void test_btree()
 	};
 
 	BTree tree = NULL;
+	BTNode* node = NULL;
+	int pos = -1;
+	int key1 = 'R';		// in the tree.
+	int key2 = 'B';		// not in the tree.
 
-#if 1
+	// 创建
 	BTree_create(&tree, array, length);
 
-	print_btree(tree);
-#else	
-	for (int i = 0; i < length; i++) {
-		BTree_insert(&tree, array[i]);
+	printf("\n=== 创建 B- 树 ===\n");
+	BTree_print(tree);
+	printf("\n");
 
-		printf("\n\n === %d nodes ===", i + 1);
-		print_btree(tree);
-	}
-#endif
+	// 查找
+	test_BTree_search(tree, key1);
+	printf("\n");
+	test_BTree_search(tree, key2);
+	
+	// 插入关键字
+	printf("\n插入关键字 %c \n", key2);
+	BTree_insert(&tree, key2);
+	BTree_print(tree);
+	printf("\n");
 
+	test_BTree_search(tree, key2);
+	
+	// 移除关键字
+	printf("\n插入关键字 %c \n", key1);
+
+	BTree_remove(&tree, key1);
+	printf("\n");
+
+	test_BTree_search(tree, key1);
+
+	// 销毁
 	BTree_destory(&tree);
 }
 
