@@ -372,10 +372,10 @@ void test_BTree_remove(BTree* tree, int key)
 
 void test_btree()
 {
-	const int length = 20;
+	const int length = 10;
 	int array[length] = {
 		'G', 'M', 'P', 'X', 'A', 'C', 'D', 'E', 'J', 'K',
-		'N', 'O', 'R', 'S', 'T', 'U', 'V', 'Y', 'Z', 'F'
+		//'N', 'O', 'R', 'S', 'T', 'U', 'V', 'Y', 'Z', 'F'
 	};
 
 	BTree tree = NULL;
@@ -395,7 +395,7 @@ void test_btree()
 	test_BTree_search(tree, key1);
 	printf("\n");
 	test_BTree_search(tree, key2);
-	
+
 	// ²åÈë¹Ø¼ü×Ö
 	printf("\n²åÈë¹Ø¼ü×Ö %c \n", key2);
 	BTree_insert(&tree, key2);
@@ -403,17 +403,15 @@ void test_btree()
 	printf("\n");
 
 	test_BTree_search(tree, key2);
-	
+
 	// ÒÆ³ý¹Ø¼ü×Ö
-#if 1
-	key2 = 'C';
 	test_BTree_remove(&tree, key2);
 	test_BTree_search(tree, key2);
 
-	key2 = 'B';
+	// ÒÆ³ý¹Ø¼ü×Ö
+	key2 = 'M';
 	test_BTree_remove(&tree, key2);
 	test_BTree_search(tree, key2);
-#endif
 
 	// Ïú»Ù
 	BTree_destory(&tree);
