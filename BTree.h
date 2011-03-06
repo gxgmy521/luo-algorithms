@@ -27,6 +27,8 @@ void BTree_insert(BTree* tree, int key);
 
 void BTree_remove(BTree* tree, int key);
 
+void BTree_print(BTree tree, int her = 1);
+
 // 在B-树 tree 中查找关键字 key，
 // 成功时返回找到的节点的地址及 key 在其中的位置 *pos
 // 失败时返回 NULL 及查找失败时扫描到的节点位置 *pos
