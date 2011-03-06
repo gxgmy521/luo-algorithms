@@ -7,7 +7,7 @@
 
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-//#define DEBUG_TREE
+#define DEBUG_TREE
 
 #ifdef DEBUG_TREE
 #define debug_print(fmt,...) printf(fmt, ## __VA_ARGS__)
@@ -40,7 +40,7 @@ void BTree_print(BTree tree, int her)
 		printf("\n");
 
 		++her;
-		for (i = 0 ; i <= BTree_N; i++) {
+		for (i = 0 ; i <= node->keynum; i++) {
 			if (node->child[i]) {
 				BTree_print(node->child[i], her);
 			}
@@ -63,18 +63,20 @@ void BTree_split_child(BTNode* parent, int index, BTNode* node)
 		return;
 	}
 	
-	newNode->isLeaf = true;
+	newNode->isLeaf = node->isLeaf;
 	newNode->keynum = BTree_T - 1;
 
 	// 拷贝 node 后半部分关键字
 	for (i = 0; i < newNode->keynum; ++i){
 		newNode->key[i] = node->key[BTree_T + i];
+		node->key[BTree_T + i] = 0;
 	}
 
 	// 如果 node 不是叶子节点，拷贝 node 后半部分的孩子节点
 	if (!node->isLeaf) {
 		for (i = 0; i < BTree_T; i++) {
 			newNode->child[i] = node->child[BTree_T + i];
+			node->child[BTree_T + i] = NULL;
 		}
 	}
 
@@ -207,7 +209,7 @@ void BTree_insert(BTree* tree, int key)
 void BTree_remove(BTree* tree, int key)
 {
 	// B-数的保持条件之一：
-	// 非根节点的非叶子节点的关键字数目不能少于 BTree_T - 1
+	// 非根节点的内部节点的关键字数目不能少于 BTree_T - 1
 
 	int i, j, index;
 	BTNode *root = *tree;
@@ -235,20 +237,22 @@ void BTree_remove(BTree* tree, int key)
 				node->child[i + 1] = node->child[i + 2];
 			}
 
-			node->key[node->keynum - 1] = 0;
-			node->child[node->keynum] = NULL;
 			--node->keynum;
 
 			if (node->keynum == 0) {
-				// todo:
+				assert(node == *tree);
+				free(node);
+				*tree = NULL;
 			}
+
+			return;
 		}
 
 		// 2a
 		// 如果位于 key 前的子节点的 key 数目 > BTree_T，
 		// 在其中找 key 的前驱，用前驱的 key 值赋予 key，
 		// 然后递归删除前驱
-		else if (node->child[index]->keynum > BTree_T) {
+		else if (node->child[index]->keynum >= BTree_T) {
 			prevChild = node->child[index];
 			prevKey = prevChild->key[prevChild->keynum - 1];
 			node->key[index] = prevKey;
@@ -257,10 +261,10 @@ void BTree_remove(BTree* tree, int key)
 		}
 
 		// 2b
-		// 如果位于 key 后的子节点的 key 数目 > BTree_T，
+		// 如果位于 key 后的子节点的 key 数目 >= BTree_T，
 		// 在其中找 key 的后继，用后继的 key 值赋予 key，
 		// 然后递归删除后继
-		else if (node->child[index + 1]->keynum > BTree_T) {
+		else if (node->child[index + 1]->keynum >= BTree_T) {
 			nextChild = node->child[index + 1];
 			nextKey = nextChild->key[nextChild->keynum - 1];
 			node->key[index] = nextKey;
@@ -311,6 +315,10 @@ void BTree_remove(BTree* tree, int key)
 	//  key < node->key[index], 所以 key 应当在孩子节点 node->child[index] 中
 	else {
 		child = node->child[index];
+		if (!child) {
+			printf("Failed to remove %c, it is not in the tree!\n", key);
+			return;
+		}
 
 		if (child->keynum == BTree_T - 1) {
 			prevChild = NULL;
@@ -327,10 +335,10 @@ void BTree_remove(BTree* tree, int key)
 			// 3a 如果所在孩子节点相邻的兄弟节点中有节点至少包含 BTree_t 个关键字
 			// 将 node 的一个关键字下降到 child 中，将相邻兄弟节点中一个节点上升到
 			// node 中，递归在 child 中查找
-			if ((prevChild && prevChild->keynum > BTree_T)
-				|| (nextChild && nextChild->keynum > BTree_T)) {
+			if ((prevChild && prevChild->keynum >= BTree_T)
+				|| (nextChild && nextChild->keynum >= BTree_T)) {
 				
-				if (nextChild && nextChild->keynum > BTree_T) {
+				if (nextChild && nextChild->keynum >= BTree_T) {
 					child->key[child->keynum] = node->key[index];
 					child->child[child->keynum + 1] = nextChild->child[0];
 					++child->keynum;
@@ -413,7 +421,7 @@ void BTree_remove(BTree* tree, int key)
 
 					if (node->keynum == 0) {
 						if (*tree == node) {
-							*tree = prevChild;
+							*tree = child;
 						}
 
 						free(node);
