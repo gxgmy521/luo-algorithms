@@ -25,7 +25,7 @@ void disk_read(BTNode** node)
 	printf("从磁盘读取节点\n");
 }
 
-void BTree_print(BTree tree, int her) 
+void BTree_print(BTree tree, int her)
 {
 	int i;
 	BTNode* node = tree;
@@ -62,7 +62,7 @@ void BTree_split_child(BTNode* parent, int index, BTNode* node)
 		printf("Error! out of memory!\n");
 		return;
 	}
-	
+
 	newNode->isLeaf = node->isLeaf;
 	newNode->keynum = BTree_T - 1;
 
@@ -85,7 +85,7 @@ void BTree_split_child(BTNode* parent, int index, BTNode* node)
 
 	// 调整父节点
 	for (i = parent->keynum; i > index; --i) {
-		parent->child[i + 1] = parent->child[i]; 
+		parent->child[i + 1] = parent->child[i];
 	}
 
 	parent->child[index + 1] = newNode;
@@ -123,7 +123,7 @@ void BTree_insert_nonfull(BTNode* node, int key)
 			node->key[i + 1] = node->key[i];
 			--i;
 		}
-		
+
 		node->key[i + 1] = key;
 		++node->keynum;
 
@@ -189,7 +189,7 @@ void BTree_insert(BTree* tree, int key)
 			printf("Error! out of memory!\n");
 			return;
 		}
-	
+
 		*tree = node;
 		node->isLeaf = false;
 		node->keynum = 0;
@@ -204,6 +204,62 @@ void BTree_insert(BTree* tree, int key)
 	else {
 		BTree_insert_nonfull(root, key);
 	}
+}
+
+
+// 对 tree 中的节点 node 进行合并孩子节点处理
+// 将 node 中索引为 index + 1 的孩子节点合并到索引为 index 的孩子节点中，
+// 并将 tree 中索引为 index  的 key 下降到该节点中
+//
+void BTree_merge_child(BTree* tree, BTree* node, int index)
+{
+	assert(tree && node && index >= 0 && index < (*node)->keynum);
+
+	int i, j;
+
+	BTNode* temp = *node;
+
+	int key = temp->key[index];
+	BTNode* prevChild = temp->child[index];
+	BTNode* nextChild = temp->child[index + 1];
+
+	assert(prevChild && prevChild->keynum == BTree_T - 1
+		&& nextChild && nextChild->keynum == BTree_T - 1);
+
+	prevChild->key[prevChild->keynum] = key;
+	prevChild->child[prevChild->keynum + 1] = nextChild->child[0];
+	++prevChild->keynum;
+
+	// 合并
+	j = prevChild->keynum;
+	for (i = 0; i < nextChild->keynum; i++) {
+		prevChild->key[j] = nextChild->key[i];
+		prevChild->child[j + 1] = nextChild->child[j + 1];
+		++prevChild->keynum;
+		++j;
+	}
+
+	// 在 node 中移除 key 以及指向后继孩子节点的指针
+	for (i = index; i < temp->keynum; i++) {
+		temp->key[i] = temp->key[i + 1];
+		temp->child[i + 1] = temp->child[i + 2];
+	}
+
+	temp->key[temp->keynum - 1] = 0;
+	temp->child[temp->keynum] = NULL;
+	--temp->keynum;
+
+	if (temp->keynum == 0) {
+		if (*tree == temp) {
+			*tree = prevChild;
+		}
+
+		free(node);
+
+		*node = NULL;
+	}
+
+	free(nextChild);
 }
 
 void BTree_remove(BTree* tree, int key)
@@ -221,7 +277,7 @@ void BTree_remove(BTree* tree, int key)
 		printf("Failed to remove %c, it is not in the tree!\n", key);
 		return;
 	}
-	
+
 	index = 0;
 	while (index < node->keynum && key > node->key[index]) {
 		++index;
@@ -279,9 +335,10 @@ void BTree_remove(BTree* tree, int key)
 		// 在前驱孩子节点中递归删除 key
 		else if (node->child[index]->keynum == BTree_T - 1
 			&& node->child[index + 1]->keynum == BTree_T - 1){
+#if 0
 			prevChild = node->child[index];
 			nextChild = node->child[index + 1];
-			
+
 			prevChild->key[prevChild->keynum] = key;
 			prevChild->child[prevChild->keynum + 1] = nextChild->child[0];
 			++prevChild->keynum;
@@ -305,6 +362,9 @@ void BTree_remove(BTree* tree, int key)
 			--node->keynum;
 
 			free(nextChild);
+#else
+			BTree_merge_child(tree, &node, index);
+#endif
 
 			// 在前驱孩子节点中递归删除 key
 			BTree_remove(&prevChild, key);
@@ -327,7 +387,7 @@ void BTree_remove(BTree* tree, int key)
 			if (index - 1 >= 0) {
 				prevChild = node->child[index - 1];
 			}
-			
+
 			if (index + 1 <= node->keynum) {
 				nextChild = node->child[index + 1];
 			}
@@ -335,11 +395,24 @@ void BTree_remove(BTree* tree, int key)
 			// 3a 如果所在孩子节点相邻的兄弟节点中有节点至少包含 BTree_t 个关键字
 			// 将 node 的一个关键字下降到 child 中，将相邻兄弟节点中一个节点上升到
 			// node 中，递归在 child 中查找
+			//
+			//  index of key:    i-1  i
+			//	            +---+---+---+---+
+			//             ...  + d + d +  ...
+			//	            +---+---+---+---+
+			//                 /    |    \
+			//  index of C: i - 1   i    i + 1
+			//               /      |      \
+			//	    +---+---+     +---+	  +---+---+
+			//     ...  + up+     +   +   +up +  ...
+			//	    +---+---+     +---+	  +---+---+
+			//      prevChild     child   nextChild
+
 			if ((prevChild && prevChild->keynum >= BTree_T)
 				|| (nextChild && nextChild->keynum >= BTree_T)) {
-				
+
 				if (nextChild && nextChild->keynum >= BTree_T) {
-					child->key[child->keynum] = node->key[index];
+					child->key[child->keynum] = node->key[index + 1];
 					child->child[child->keynum + 1] = nextChild->child[0];
 					++child->keynum;
 
@@ -373,7 +446,8 @@ void BTree_remove(BTree* tree, int key)
 			else if ((!prevChild || (prevChild && prevChild->keynum == BTree_T - 1))
 				&& ((!nextChild || nextChild && nextChild->keynum == BTree_T - 1))) {
 				if (prevChild && prevChild->keynum == BTree_T - 1) {
-					prevChild->key[prevChild->keynum] = node->key[index - 1];
+#if 0
+					prevChild->key[prevChild->keynum] = node->key[index];
 					prevChild->child[prevChild->keynum + 1] = child->child[0];
 					++prevChild->keynum;
 
@@ -382,7 +456,7 @@ void BTree_remove(BTree* tree, int key)
 						prevChild->child[prevChild->keynum + 1] = child->child[j + 1];
 						++prevChild->keynum;
 					}
-						
+
 					for (j = index - 1; j < node->keynum - 1; j++) {
 						node->key[j] = node->key[j + 1];
 						node->child[j + 1] = node->child[j + 2];
@@ -398,12 +472,18 @@ void BTree_remove(BTree* tree, int key)
 					}
 
 					free(child);
-					
+
 					child = prevChild;
+#else
+					BTree_merge_child(tree, &node, index - 1);
+
+					child = prevChild;
+#endif
 				}
 
 				else if (nextChild && nextChild->keynum == BTree_T - 1) {
-					child->key[child->keynum] = node->key[index];
+#if 0
+					child->key[child->keynum] = node->key[index + 1];
 					child->child[child->keynum + 1] = nextChild->child[0];
 					++child->keynum;
 
@@ -428,6 +508,9 @@ void BTree_remove(BTree* tree, int key)
 					}
 
 					free(nextChild);
+#else
+					BTree_merge_child(tree, &node, index);
+#endif
 				}
 			}
 		}
@@ -484,7 +567,7 @@ void BTree_create(BTree* tree, const int* data, int length)
 	debug_print("\n");
 #endif
 
-	
+
 	for (i = 0; i < length; i++) {
 #ifdef DEBUG_TREE
 		debug_print("\n插入关键字 %c:\n", data[i]);
