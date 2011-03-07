@@ -408,8 +408,43 @@ void test_btree()
 	test_BTree_remove(&tree, key2);
 	test_BTree_search(tree, key2);
 
-	// ÒÆ³ý¹Ø¼ü×Ö
 	key2 = 'M';
+	test_BTree_remove(&tree, key2);
+	test_BTree_search(tree, key2);
+
+	key2 = 'E';
+	test_BTree_remove(&tree, key2);
+	test_BTree_search(tree, key2);
+
+	key2 = 'G';
+	test_BTree_remove(&tree, key2);
+	test_BTree_search(tree, key2);
+
+	key2 = 'A';
+	test_BTree_remove(&tree, key2);
+	test_BTree_search(tree, key2);
+
+	key2 = 'D';
+	test_BTree_remove(&tree, key2);
+	test_BTree_search(tree, key2);
+
+	key2 = 'K';
+	test_BTree_remove(&tree, key2);
+	test_BTree_search(tree, key2);
+
+	key2 = 'P';
+	test_BTree_remove(&tree, key2);
+	test_BTree_search(tree, key2);
+
+	key2 = 'J';
+	test_BTree_remove(&tree, key2);
+	test_BTree_search(tree, key2);
+
+	key2 = 'C';
+	test_BTree_remove(&tree, key2);
+	test_BTree_search(tree, key2);
+
+	key2 = 'X';
 	test_BTree_remove(&tree, key2);
 	test_BTree_search(tree, key2);
 

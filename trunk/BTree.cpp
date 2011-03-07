@@ -46,6 +46,9 @@ void BTree_print(BTree tree, int her)
 			}
 		}
 	}
+	else {
+		printf("树为空。\n");
+	}
 }
 
 // parent 是一个非满的父节点
@@ -211,17 +214,15 @@ void BTree_insert(BTree* tree, int key)
 // 将 node 中索引为 index + 1 的孩子节点合并到索引为 index 的孩子节点中，
 // 并将 tree 中索引为 index  的 key 下降到该节点中
 //
-void BTree_merge_child(BTree* tree, BTree* node, int index)
+void BTree_merge_child(BTree* tree, BTNode* node, int index)
 {
-	assert(tree && node && index >= 0 && index < (*node)->keynum);
+	assert(tree && node && index >= 0 && index < node->keynum);
 
-	int i, j;
+	int i;
 
-	BTNode* temp = *node;
-
-	int key = temp->key[index];
-	BTNode* prevChild = temp->child[index];
-	BTNode* nextChild = temp->child[index + 1];
+	int key = node->key[index];
+	BTNode* prevChild = node->child[index];
+	BTNode* nextChild = node->child[index + 1];
 
 	assert(prevChild && prevChild->keynum == BTree_T - 1
 		&& nextChild && nextChild->keynum == BTree_T - 1);
@@ -231,32 +232,28 @@ void BTree_merge_child(BTree* tree, BTree* node, int index)
 	++prevChild->keynum;
 
 	// 合并
-	j = prevChild->keynum;
 	for (i = 0; i < nextChild->keynum; i++) {
-		prevChild->key[j] = nextChild->key[i];
-		prevChild->child[j + 1] = nextChild->child[j + 1];
+		prevChild->key[prevChild->keynum] = nextChild->key[i];
+		prevChild->child[prevChild->keynum + 1] = nextChild->child[i + 1];
 		++prevChild->keynum;
-		++j;
 	}
 
 	// 在 node 中移除 key 以及指向后继孩子节点的指针
-	for (i = index; i < temp->keynum; i++) {
-		temp->key[i] = temp->key[i + 1];
-		temp->child[i + 1] = temp->child[i + 2];
+	for (i = index; i < node->keynum - 1; i++) {
+		node->key[i] = node->key[i + 1];
+		node->child[i + 1] = node->child[i + 2];
 	}
 
-	temp->key[temp->keynum - 1] = 0;
-	temp->child[temp->keynum] = NULL;
-	--temp->keynum;
+	node->key[node->keynum - 1] = 0;
+	node->child[node->keynum] = NULL;
+	--node->keynum;
 
-	if (temp->keynum == 0) {
-		if (*tree == temp) {
+	if (node->keynum == 0) {
+		if (*tree == node) {
 			*tree = prevChild;
 		}
 
 		free(node);
-
-		*node = NULL;
 	}
 
 	free(nextChild);
@@ -305,7 +302,7 @@ void BTree_remove(BTree* tree, int key)
 		}
 
 		// 2a
-		// 如果位于 key 前的子节点的 key 数目 > BTree_T，
+		// 如果位于 key 前的子节点的 key 数目 >= BTree_T，
 		// 在其中找 key 的前驱，用前驱的 key 值赋予 key，
 		// 然后递归删除前驱
 		else if (node->child[index]->keynum >= BTree_T) {
@@ -322,7 +319,7 @@ void BTree_remove(BTree* tree, int key)
 		// 然后递归删除后继
 		else if (node->child[index + 1]->keynum >= BTree_T) {
 			nextChild = node->child[index + 1];
-			nextKey = nextChild->key[nextChild->keynum - 1];
+			nextKey = nextChild->key[0];
 			node->key[index] = nextKey;
 
 			BTree_remove(&nextChild, nextKey);
@@ -335,36 +332,9 @@ void BTree_remove(BTree* tree, int key)
 		// 在前驱孩子节点中递归删除 key
 		else if (node->child[index]->keynum == BTree_T - 1
 			&& node->child[index + 1]->keynum == BTree_T - 1){
-#if 0
 			prevChild = node->child[index];
-			nextChild = node->child[index + 1];
 
-			prevChild->key[prevChild->keynum] = key;
-			prevChild->child[prevChild->keynum + 1] = nextChild->child[0];
-			++prevChild->keynum;
-
-			// 合并
-			j = prevChild->keynum;
-			for (i = 0; i < nextChild->keynum; i++, j++) {
-				prevChild->key[j] = nextChild->key[i];
-				prevChild->child[j + 1] = nextChild->child[j + 1];
-				++prevChild->keynum;
-			}
-
-			// 在 node 中移除 key 以及指向后继孩子节点的指针
-			for (i = index; i < node->keynum; i++) {
-				node->key[i] = node->key[i + 1];
-				node->child[i + 1] = node->child[i + 2];
-			}
-
-			node->key[node->keynum - 1] = 0;
-			node->child[node->keynum] = NULL;
-			--node->keynum;
-
-			free(nextChild);
-#else
-			BTree_merge_child(tree, &node, index);
-#endif
+			BTree_merge_child(tree, node, index);
 
 			// 在前驱孩子节点中递归删除 key
 			BTree_remove(&prevChild, key);
@@ -412,7 +382,7 @@ void BTree_remove(BTree* tree, int key)
 				|| (nextChild && nextChild->keynum >= BTree_T)) {
 
 				if (nextChild && nextChild->keynum >= BTree_T) {
-					child->key[child->keynum] = node->key[index + 1];
+					child->key[child->keynum] = node->key[index];
 					child->child[child->keynum + 1] = nextChild->child[0];
 					++child->keynum;
 
@@ -446,71 +416,15 @@ void BTree_remove(BTree* tree, int key)
 			else if ((!prevChild || (prevChild && prevChild->keynum == BTree_T - 1))
 				&& ((!nextChild || nextChild && nextChild->keynum == BTree_T - 1))) {
 				if (prevChild && prevChild->keynum == BTree_T - 1) {
-#if 0
-					prevChild->key[prevChild->keynum] = node->key[index];
-					prevChild->child[prevChild->keynum + 1] = child->child[0];
-					++prevChild->keynum;
 
-					for (j = 0; j < child->keynum; ++j) {
-						prevChild->key[prevChild->keynum] = child->key[j];
-						prevChild->child[prevChild->keynum + 1] = child->child[j + 1];
-						++prevChild->keynum;
-					}
-
-					for (j = index - 1; j < node->keynum - 1; j++) {
-						node->key[j] = node->key[j + 1];
-						node->child[j + 1] = node->child[j + 2];
-					}
-					--node->keynum;
-
-					if (node->keynum == 0) {
-						if (*tree == node) {
-							*tree = prevChild;
-						}
-
-						free(node);
-					}
-
-					free(child);
+					BTree_merge_child(tree, node, index - 1);
 
 					child = prevChild;
-#else
-					BTree_merge_child(tree, &node, index - 1);
-
-					child = prevChild;
-#endif
 				}
 
 				else if (nextChild && nextChild->keynum == BTree_T - 1) {
-#if 0
-					child->key[child->keynum] = node->key[index + 1];
-					child->child[child->keynum + 1] = nextChild->child[0];
-					++child->keynum;
 
-					for (j = 0; j < nextChild->keynum; ++j) {
-						child->key[child->keynum] = nextChild->key[j];
-						child->child[child->keynum + 1] = nextChild->child[j + 1];
-						++child->keynum;
-					}
-
-					for (j = index; j < node->keynum - 1; j++) {
-						node->key[j] = node->key[j + 1];
-						node->child[j + 1] = node->child[j + 2];
-					}
-					--node->keynum;
-
-					if (node->keynum == 0) {
-						if (*tree == node) {
-							*tree = child;
-						}
-
-						free(node);
-					}
-
-					free(nextChild);
-#else
-					BTree_merge_child(tree, &node, index);
-#endif
+					BTree_merge_child(tree, node, index);
 				}
 			}
 		}
@@ -521,7 +435,9 @@ void BTree_remove(BTree* tree, int key)
 
 BTNode* BTree_search(const BTree tree, int key, int* pos)
 {
-	assert(tree);
+	if (!tree) {
+		return NULL;
+	}
 
 	int i = 0;
 
