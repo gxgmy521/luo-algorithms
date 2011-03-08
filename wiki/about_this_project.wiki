@@ -10,22 +10,26 @@ This project is about algorithms, such as sort, search, tree, A-Star, etc.
 == Completed ==
 
 * Sort
- # insert_sort
- # shell_sort
- # bubble_sort
- # quick_sort
- # select_sort
- # heap_sort
- # merge_sort
- # bucket_sort
- # radix_sort
+ # Insert sort
+ # Shell sort
+ # Bubble sort
+ # Quick sort
+ # Select sort
+ # Heap sort
+ # Merge sort
+ # Bucket sort
+ # Radix sort
 
 * Search
- # sequential_search
- # binary_search
- # blocking_search
- # hash_search
- # binary_tree_search
+ # Sequential search
+ # Binary search
+ # Blocking search
+ # Hash search
+ # Binary search tree search
+
+* Tree
+ # Binary search tree
+ # B-Tree
 
 =============================================================
 
@@ -55,3 +59,7 @@ This project is about algorithms, such as sort, search, tree, A-Star, etc.
  # 块排序
  # 哈希查找
  # 二叉树查找
+
+*  树
+ # 二叉查找树
+ # B- 树
