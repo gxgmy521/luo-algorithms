@@ -1,5 +1,5 @@
 #labels Featured,Phase-Implementation,Phase-Requirements
-#This project is about algorithms.
+This project is about algorithms.
 
 = Introduction =
 
