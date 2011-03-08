@@ -237,7 +237,7 @@ void BST_destory(BSTree* tree)
 }
 
 // 前序遍历
-void BST_prev_order_impl(BSTree* tree, int* data, int& index)
+void BST_prev_order_impl(BSTree tree, int* data, int& index)
 {
     assert(data && tree && index >= 0);
 
@@ -262,11 +262,11 @@ void BST_prev_order(BSTree* tree, int* data)
 
     int index = 0;
 
-    BST_prev_order_impl(tree, data, index);
+    BST_prev_order_impl(*tree, data, index);
 }
 
 // 中序遍历
-void BST_in_order_impl(BSTree* tree, int* data, int& index)
+void BST_in_order_impl(BSTree tree, int* data, int& index)
 {
     assert(data && tree && index >= 0);
 
@@ -291,10 +291,10 @@ void BST_in_order(BSTree* tree, int* data)
 
     int index = 0;
 
-    BST_in_order_impl(tree, data, index);
+    BST_in_order_impl(*tree, data, index);
 }
 
-void BST_post_order_impl(BSTree* tree, int* data, int& index)
+void BST_post_order_impl(BSTree tree, int* data, int& index)
 {
     assert(data && tree && index >= 0);
 
@@ -319,5 +319,5 @@ void BST_post_order(BSTree* tree, int* data)
 
     int index = 0;
 
-    BST_post_order_impl(tree, data, index);
+    BST_post_order_impl(*tree, data, index);
 }
