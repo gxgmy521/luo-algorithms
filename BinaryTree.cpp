@@ -102,7 +102,7 @@ void BST_remove(BSTree* tree, int key)
 
 		free(node);
 	}
-	
+
 	// 如果节点的左孩子不为空，右孩子为空
 	else if (NULL != node->leftChild) {
 		if (parent->leftChild == node) {
@@ -136,7 +136,7 @@ void BST_remove(BSTree* tree, int key)
 		//		   /    \
 		//       ...    ...
 		//             /
-		//           temp       <----- remove most left child        
+		//           temp       <----- remove most left child
 		//          /    \
 		//        null  rightChild
 
@@ -151,7 +151,7 @@ void BST_remove(BSTree* tree, int key)
 
 		node->key = temp->key;
 		parent->leftChild = temp->rightChild;
-		
+
 		free(node);
 	}
 }
@@ -221,7 +221,7 @@ void BST_create(BSTree* tree, const int* data, int length)
 }
 
 // 销毁二叉树
-// 
+//
 void BST_destory(BSTree* tree)
 {
 	BSTNode* node = *tree;
@@ -234,4 +234,90 @@ void BST_destory(BSTree* tree)
 	}
 
 	*tree = NULL;
+}
+
+// 前序遍历
+void BST_prev_order_impl(BSTree* tree, int* data, int& index)
+{
+    assert(data && tree && index >= 0);
+
+    data[index] = tree->key;
+
+    if (tree->leftChild) {
+        BST_prev_order_impl(tree->leftChild, data, index);
+    }
+
+    if (tree->rightChild) {
+        BST_prev_order_impl(tree->rightChild, data, ++index);
+    }
+}
+
+void BST_prev_order(BSTree* tree, int* data)
+{
+    assert(data);
+
+    if (!tree) {
+        return;
+    }
+
+    int index = 0;
+
+    BST_prev_order_impl(tree, data, index);
+}
+
+// 中序遍历
+void BST_in_order_impl(BSTree* tree, int* data, int& index)
+{
+    assert(data && tree && index >= 0);
+
+    if (tree->leftChild) {
+        BST_in_order_impl(tree->leftChild, data, ++index);
+    }
+
+    data[index] = tree->key;
+
+    if (tree->rightChild) {
+        BST_in_order_impl(tree->rightChild, data, ++index);
+    }
+}
+
+void BST_in_order(BSTree* tree, int* data)
+{
+    assert(data);
+
+    if (!tree) {
+        return;
+    }
+
+    int index = 0;
+
+    BST_in_order_impl(tree, data, index);
+}
+
+void BST_post_order_impl(BSTree* tree, int* data, int& index)
+{
+    assert(data && tree && index >= 0);
+
+    if (tree->leftChild) {
+        BST_in_order_impl(tree->leftChild, data, ++index);
+    }
+
+    if (tree->rightChild) {
+        BST_in_order_impl(tree->rightChild, data, ++index);
+    }
+
+    data[index] = tree->key;
+}
+
+void BST_post_order(BSTree* tree, int* data)
+{
+    assert(data);
+
+    if (!tree) {
+        return;
+    }
+
+    int index = 0;
+
+    BST_post_order_impl(tree, data, index);
 }
