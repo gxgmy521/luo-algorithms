@@ -211,8 +211,9 @@ void BTree_insert(BTree* tree, int key)
 
 
 // 对 tree 中的节点 node 进行合并孩子节点处理
+// 注意：孩子节点的 keynum 必须均已达到下限，即均等于 BTree_T - 1
 // 将 node 中索引为 index + 1 的孩子节点合并到索引为 index 的孩子节点中，
-// 并将 tree 中索引为 index  的 key 下降到该节点中
+// 并将 tree 中索引为 index  的 key 下降到该节点中，调整相关的 key 和指针。
 //
 void BTree_merge_child(BTree* tree, BTNode* node, int index)
 {
@@ -232,14 +233,14 @@ void BTree_merge_child(BTree* tree, BTNode* node, int index)
 	++prevChild->keynum;
 
 	// 合并
-	for (i = 0; i < nextChild->keynum; i++) {
+	for (i = 0; i < nextChild->keynum; ++i) {
 		prevChild->key[prevChild->keynum] = nextChild->key[i];
 		prevChild->child[prevChild->keynum + 1] = nextChild->child[i + 1];
 		++prevChild->keynum;
 	}
 
 	// 在 node 中移除 key 以及指向后继孩子节点的指针
-	for (i = index; i < node->keynum - 1; i++) {
+	for (i = index; i < node->keynum - 1; ++i) {
 		node->key[i] = node->key[i + 1];
 		node->child[i + 1] = node->child[i + 2];
 	}
@@ -248,12 +249,14 @@ void BTree_merge_child(BTree* tree, BTNode* node, int index)
 	node->child[node->keynum] = NULL;
 	--node->keynum;
 
+	// 如果根节点没有 key 了，删之，并将根节点调整为前继孩子节点。
 	if (node->keynum == 0) {
 		if (*tree == node) {
 			*tree = prevChild;
 		}
 
 		free(node);
+		node = NULL;
 	}
 
 	free(nextChild);
@@ -280,12 +283,24 @@ void BTree_remove(BTree* tree, int key)
 		++index;
 	}
 
+	//
+	//  index of key:    i-1  i  i+1
+	//	            +---+---+---+---+---+
+	//             ...  +   + A +   +  ...
+	//	            +---+---+---+---+---+
+	//                 /    |    \
+	//  index of C: i - 1   i    i + 1
+	//               /      |      \
+	//	    +---+---+     +---+	  +---+---+
+	//     ...  +   +     +   +   +   +  ...
+	//	    +---+---+     +---+	  +---+---+
+	//      prevChild     child   nextChild
+
 	// Find the key.
 	if (index < node->keynum && node->key[index] == key) {
-		// 1
-		// 所在节点是叶子节点，直接删除
+		// 1，所在节点是叶子节点，直接删除
 		if (node->isLeaf) {
-			for (i = index; i < node->keynum; i++) {
+			for (i = index; i < node->keynum; ++i) {
 				node->key[i] = node->key[i + 1];
 				node->child[i + 1] = node->child[i + 2];
 			}
@@ -301,10 +316,9 @@ void BTree_remove(BTree* tree, int key)
 			return;
 		}
 
-		// 2a
-		// 如果位于 key 前的子节点的 key 数目 >= BTree_T，
+		// 2a，如果位于 key 前的子节点的 key 数目 >= BTree_T，
 		// 在其中找 key 的前驱，用前驱的 key 值赋予 key，
-		// 然后递归删除前驱
+		// 然后在前驱所在孩子节点中递归删除前驱。
 		else if (node->child[index]->keynum >= BTree_T) {
 			prevChild = node->child[index];
 			prevKey = prevChild->key[prevChild->keynum - 1];
@@ -313,10 +327,9 @@ void BTree_remove(BTree* tree, int key)
 			BTree_remove(&prevChild, prevKey);
 		}
 
-		// 2b
-		// 如果位于 key 后的子节点的 key 数目 >= BTree_T，
+		// 2b，如果位于 key 后的子节点的 key 数目 >= BTree_T，
 		// 在其中找 key 的后继，用后继的 key 值赋予 key，
-		// 然后递归删除后继
+		// 然后在后继所在孩子节点中递归删除后继。
 		else if (node->child[index + 1]->keynum >= BTree_T) {
 			nextChild = node->child[index + 1];
 			nextKey = nextChild->key[0];
@@ -325,11 +338,10 @@ void BTree_remove(BTree* tree, int key)
 			BTree_remove(&nextChild, nextKey);
 		}
 
-		// 2c
-		// 前驱和后继都只包含 BTree_T - 1 个节点，
-		// 将 key 插入前驱孩子节点，并将后继孩子节点合并到前驱孩子节点，
-		// 删除后继孩子节点，在 node 中移除 key 和指向后继孩子节点的指针
-		// 在前驱孩子节点中递归删除 key
+		// 2c，前驱和后继都只包含 BTree_T - 1 个节点，
+		// 将 key 下降前驱孩子节点，并将后继孩子节点合并到前驱孩子节点，
+		// 删除后继孩子节点，在 node 中移除 key 和指向后继孩子节点的指针，
+		// 然后在前驱所在孩子节点中递归删除 key。
 		else if (node->child[index]->keynum == BTree_T - 1
 			&& node->child[index + 1]->keynum == BTree_T - 1){
 			prevChild = node->child[index];
@@ -362,22 +374,9 @@ void BTree_remove(BTree* tree, int key)
 				nextChild = node->child[index + 1];
 			}
 
-			// 3a 如果所在孩子节点相邻的兄弟节点中有节点至少包含 BTree_t 个关键字
+			// 3a，如果所在孩子节点相邻的兄弟节点中有节点至少包含 BTree_t 个关键字
 			// 将 node 的一个关键字下降到 child 中，将相邻兄弟节点中一个节点上升到
-			// node 中，递归在 child 中查找
-			//
-			//  index of key:    i-1  i
-			//	            +---+---+---+---+
-			//             ...  + d + d +  ...
-			//	            +---+---+---+---+
-			//                 /    |    \
-			//  index of C: i - 1   i    i + 1
-			//               /      |      \
-			//	    +---+---+     +---+	  +---+---+
-			//     ...  + up+     +   +   +up +  ...
-			//	    +---+---+     +---+	  +---+---+
-			//      prevChild     child   nextChild
-
+			// node 中，然后在 child 孩子节点中递归删除 key。
 			if ((prevChild && prevChild->keynum >= BTree_T)
 				|| (nextChild && nextChild->keynum >= BTree_T)) {
 
@@ -410,9 +409,10 @@ void BTree_remove(BTree* tree, int key)
 				}
 			}
 
-			// 3b, 如果所在孩子节点相邻的兄弟节点都只包含 BTree_t - 1 个关键字
-			// 将 child 与其一相邻节点合并，并将 node 中的一个关键字下降到合并节点中
-			// 如果 node 为空，删之，并调整根
+			// 3b, 如果所在孩子节点相邻的兄弟节点都只包含 BTree_t - 1 个关键字，
+			// 将 child 与其一相邻节点合并，并将 node 中的一个关键字下降到合并节点中，
+			// 再在 node 中删除那个关键字和相关指针，若 node 的 key 为空，删之，并调整根。
+			// 最后，在相关孩子节点中递归删除 key。
 			else if ((!prevChild || (prevChild && prevChild->keynum == BTree_T - 1))
 				&& ((!nextChild || nextChild && nextChild->keynum == BTree_T - 1))) {
 				if (prevChild && prevChild->keynum == BTree_T - 1) {

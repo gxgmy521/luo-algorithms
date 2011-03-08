@@ -28,4 +28,15 @@ void BBT_insert(BSTree* tree, int key);
 
 void BBT_remove(BSTree* tree, int key);
 
+// 遍历二叉树
+//
+// 前序遍历
+void BST_prev_order(BSTree* tree, int* data);
+
+// 中序遍历
+void BST_in_order(BSTree* tree, int* data);
+
+// 后序遍历
+void BST_post_order(BSTree* tree, int* data);
+
 #endif // __BINARY_TREE_H__
