@@ -19,10 +19,6 @@ void insert_sort(int* array, int length)
 {
 	assert(array && length >= 0);
 
-	if (length <= 1) {
-		return;
-	}
-
 	int i, j, temp;
 	for (i = 1; i < length; ++i) {
 		temp = array[i];
@@ -42,10 +38,6 @@ void insert_sort(int* array, int length)
 void shell_sort(int* array, int length)
 {
 	assert(array && length >= 0);
-
-	if (length <= 1) {
-		return;
-	}
 
 	int i, j , temp;
 	int increment = length;
@@ -176,10 +168,6 @@ void quick_sort(int* array, int length)
 {
 	assert(array && length >= 0);
 
-	if (length <= 1) {
-		return;
-	}
-
 	quick_sort_impl( array, 0, length - 1);
 }
 
@@ -190,13 +178,9 @@ void select_sort(int* array, int length)
 {
 	assert(array && length >= 0);
 
-	if (length <= 1) {
-		return;
-	}
-
 	int i, j, k, temp;
 
-	for (i = 0; i < length; ++i) {
+	for (i = 1; i < length; ++i) {
 		k = i;
 
 		for (j = i + 1; j < length; ++j) {
@@ -296,10 +280,6 @@ void heap_sort(int* array, int length)
 {
 	assert(array && length >= 0);
 
-	if (length <= 1) {
-		return;
-	}
-
 	int i, temp;
 
 	// 将 [0, length - 1] 建成初始堆
@@ -380,10 +360,6 @@ void merge_sort(int* array, int length)
 {
 	assert(array && length >= 0);
 
-	if (length <= 1) {
-		return;
-	}
-
 	int n;
 
 	for(n = 1; n < length; n = (n << 1)) {
@@ -411,10 +387,6 @@ void merge_sort_dc_impl(int* array, int low, int high)
 void merge_sort_dc(int* array, int length)
 {
 	assert(array && length >= 0);
-
-	if (length <= 1) {
-		return;
-	}
 
 	merge_sort_dc_impl(array, 0, length - 1);
 }
