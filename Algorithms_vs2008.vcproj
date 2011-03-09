@@ -166,12 +166,16 @@
 	</References>
 	<Files>
 		<Filter
-			Name="main"
+			Name="misc"
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Test.cpp"
+				RelativePath=".\Misc.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Misc.h"
 				>
 			</File>
 		</Filter>
@@ -221,6 +225,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\Test.cpp"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
