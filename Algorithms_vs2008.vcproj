@@ -224,6 +224,14 @@
 				RelativePath=".\BTree.h"
 				>
 			</File>
+			<File
+				RelativePath=".\RedBlackTree.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RedBlackTree.h"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\Test.cpp"
