@@ -174,13 +174,13 @@ void quick_sort(int* array, int length)
 
 // Ö±½ÓÑ¡ÔñÅÅÐò
 //
-void select_sort(int* array, int length)
+void selection_sort(int* array, int length)
 {
 	assert(array && length >= 0);
 
 	int i, j, k, temp;
 
-	for (i = 1; i < length; ++i) {
+	for (i = 0; i < length - 1; ++i) {
 		k = i;
 
 		for (j = i + 1; j < length; ++j) {

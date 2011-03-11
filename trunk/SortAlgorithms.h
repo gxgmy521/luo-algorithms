@@ -74,7 +74,7 @@ void quick_sort(int* array, int length);
 * ø’º‰∏¥‘”∂»  £∫O(0)
 * Œ»∂®≈≈–Ú	  £∫∑Ò
 */
-void select_sort(int* array, int length);
+void selection_sort(int* array, int length);
 
 
 /**
