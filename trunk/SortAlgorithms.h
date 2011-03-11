@@ -107,6 +107,16 @@ void merge_sort(int* array, int length);
 //
 void merge_sort_dc(int* array, int length);
 
+/**
+* 算法名称	 ：计数排序
+* 算法描述	 ：
+* 时间复杂度 ：O(n)
+* 空间复杂度 ：O(n + m)
+* 稳定排序	 ：是
+* 使用限制	 ：待排序记录均为小于等于 k 的正整数。
+*/
+void counting_sort(int* array, int length, int k);
+
 
 /**
 * 算法名称	 ：箱/桶排序

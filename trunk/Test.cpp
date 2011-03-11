@@ -79,6 +79,15 @@ void test_sort_function(Sort_Function func)
 
 		printf("\n");
 	}
+
+	printf("\n=== 计数排序 ===\n");
+	int array2[11] = {65, 32, 49, 10, 18, 72, 27, 42, 18, 58, 91};
+
+	print_array(array2, length, " data: ");
+
+	counting_sort(array2, length, 100);
+
+	print_array(array2, length, " data: ");
 }
 
 // 测试各种排序算法
@@ -466,7 +475,7 @@ int main(int argc, const char* argv[])
 #endif
 
 #ifdef BTREE_TEST
-	test_btree();
+	//test_btree();
 #endif
 
 	printf("\n测试结束\n");

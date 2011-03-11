@@ -6,7 +6,7 @@
 
 // find the sequence, the sum of which equals n, between 1 ~ n.
 //
-void find_sum_equals_n(int n)
+void find_sum_equals_n(int sum)
 {
     // sum = n * (a1 + an) / 2 = n * a1 + n * (n - 1) / 2
     //     --> k = sum ¨C n * (n - 1) / 2
