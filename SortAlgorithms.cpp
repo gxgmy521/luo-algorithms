@@ -336,7 +336,7 @@ void merge(int* array, int low, int mid, int high)
 
 // 对 [0, length - 1] 做一趟归并长度为 n  的归并排序
 void merge_pass(int* array, int length, int n)
-{ 
+{
 	assert(array && length >= 1 && n >= 1);
 
 	int i;
@@ -391,6 +391,57 @@ void merge_sort_dc(int* array, int length)
 	merge_sort_dc_impl(array, 0, length - 1);
 }
 
+// array 中记录的值必须界于范围 [0, k] 之间。
+//
+void counting_sort(int* array, int length, int k)
+{
+	int* temp = NULL;	// a copy of array.
+	int* counts = NULL;	// for counting.
+	int i;
+
+	temp = (int*)malloc(sizeof(int) * length);
+	if (!temp) {
+		printf("Error: out of memory!\n");
+		return;
+	}
+
+	counts = (int*)calloc(sizeof(int), k + 1);
+	if (!counts) {
+		printf("Error: out of memory!\n");
+
+		if (temp) {
+			free(temp);
+		}
+		return;
+	}
+
+	memcpy(temp, array, sizeof(int) * length);
+
+	// 计数
+	for (i = 0; i < length; ++i) {
+		++counts[temp[i]];
+	}
+
+	// 确定顺序
+	for (i = 1; i <= k; ++i) {
+		counts[i] += counts[i - 1];
+	}
+
+	// 排序
+	for (i = 0; i < length; ++i) {
+		array[counts[temp[i]] - 1] = temp[i];
+		--counts[temp[i]];
+	}
+
+	if (temp) {
+		free(temp);
+	}
+
+	if (counts) {
+		free(counts);
+	}
+}
+
 // 箱/桶排序和基数排序：以空间换时间
 //
 struct bucket_node {
@@ -402,8 +453,8 @@ struct bucket_node {
 int get_max_digital_count(int* array, int length)
 {
 	assert(array && length > 0);
-	
-	int i = 0; 
+
+	int i = 0;
 	int max = array[0];
 	int maxDigitalCount = 1;
 
@@ -412,7 +463,7 @@ int get_max_digital_count(int* array, int length)
 			max = array[i];
 		}
 	}
-	
+
 	while ((max / 10) > 0) {
 		max %= 10;
 		++maxDigitalCount;
@@ -440,7 +491,7 @@ void bucket_sort(int* array, int length)
 	if (length <= 1) {
 		return;
 	}
-	
+
 	int i, index;
 	bucket_node* temp = NULL;
 	bucket_node bucket[10] = {0, };	// 根据数字个数 0 ~ 9 建立 10 个桶
@@ -499,7 +550,7 @@ void radix_sort(int* array, int length)
 	if (length <= 1) {
 		return;
 	}
-	
+
 	const int buffer_size = length * sizeof(int);
 
 	int i, k, count, index;
@@ -533,7 +584,7 @@ void radix_sort(int* array, int length)
 			assert(bucket[index] - 1 >= 0);
 			temp[--bucket[index]] = array[i];
 		}
-		
+
 		// 一趟桶排序完毕，拷贝结果
 		memcpy(array, temp, buffer_size);
 
