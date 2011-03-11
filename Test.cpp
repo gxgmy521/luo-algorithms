@@ -8,7 +8,7 @@
 #include "BinaryTree.h"
 #include "BTree.h"
 
-//#define SORT_TEST		// 启动排序测试
+#define SORT_TEST		// 启动排序测试
 //#define SEARCH_TEST		// 启动查找测试
 #define BTREE_TEST		// 测试 B- 树
 
@@ -50,7 +50,7 @@ SortFucntionInfo sort_function_list[] = {
 	{"冒泡排序",				bubble_sort},
 	{"冒泡排序优化版",		bubble_sort_opt},
 	{"快速排序",				quick_sort},
-	{"直接选择排序",			select_sort},
+	{"直接选择排序",			selection_sort},
 	{"堆排序",				heap_sort},
 	{"合并排序：自下向上分治",	merge_sort},
 	{"合并排序：自上向下分治",	merge_sort_dc},
@@ -79,15 +79,6 @@ void test_sort_function(Sort_Function func)
 
 		printf("\n");
 	}
-
-	printf("\n=== 计数排序 ===\n");
-	int array2[11] = {65, 32, 49, 10, 18, 72, 27, 42, 18, 58, 91};
-
-	print_array(array2, length, " data: ");
-
-	counting_sort(array2, length, 100);
-
-	print_array(array2, length, " data: ");
 }
 
 // 测试各种排序算法
@@ -98,6 +89,16 @@ void test_sort()
 		printf("\n=== %s ===\n", sort_function_list[i].name);
 		test_sort_function(sort_function_list[i].func);
 	}
+
+	const int length = 11;
+	printf("\n=== 计数排序 ===\n");
+	int array2[11] = {65, 32, 49, 10, 18, 72, 27, 42, 18, 58, 91};
+
+	print_array(array2, length, " data: ");
+
+	counting_sort(array2, length, 100);
+
+	print_array(array2, length, " data: ");
 }
 
 //==================================================================
