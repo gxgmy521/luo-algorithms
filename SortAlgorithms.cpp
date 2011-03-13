@@ -383,7 +383,7 @@ void merge_sort_dc_impl(int* array, int low, int high)
 	}
 }
 
-// 用分治法自上向下进行二路归并排序
+// 用分治法自上向下进行排序
 void merge_sort_dc(int* array, int length)
 {
 	assert(array && length >= 0);

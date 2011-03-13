@@ -8,10 +8,6 @@
 #include "BinaryTree.h"
 #include "BTree.h"
 
-#define SORT_TEST		// 启动排序测试
-//#define SEARCH_TEST		// 启动查找测试
-#define BTREE_TEST		// 测试 B- 树
-
 //==================================================================
 //					工具函数
 //==================================================================
@@ -45,17 +41,17 @@ struct SortFucntionInfo {
 };
 
 SortFucntionInfo sort_function_list[] = {
-	{"直接插入排序",			insert_sort},
-	{"希尔排序",				shell_sort},
-	{"冒泡排序",				bubble_sort},
-	{"冒泡排序优化版",		bubble_sort_opt},
-	{"快速排序",				quick_sort},
-	{"直接选择排序",			selection_sort},
-	{"堆排序",				heap_sort},
-	{"合并排序：自下向上分治",	merge_sort},
-	{"合并排序：自上向下分治",	merge_sort_dc},
-	{"桶/箱排序",			bucket_sort},
-	{"基数排序",				radix_sort},
+	{"直接插入排序",				insert_sort},
+	{"希尔排序",					shell_sort},
+	{"冒泡排序",					bubble_sort},
+	{"冒泡排序优化版",			bubble_sort_opt},
+	{"快速排序",					quick_sort},
+	{"直接选择排序",				selection_sort},
+	{"堆排序",					heap_sort},
+	{"合并排序：自下向上二路归并",	merge_sort},
+	{"合并排序：自上向下分治",		merge_sort_dc},
+	{"桶/箱排序",				bucket_sort},
+	{"基数排序",					radix_sort},
 	{"", NULL}
 };
 
@@ -120,10 +116,10 @@ struct TestSearchFucntionInfo {
 };
 
 TestSearchFucntionInfo test_search_function_list[] = {
-	{"顺序查找",				test_sequential_search},
-	{"二分查找",				test_binary_search},
-	{"分块查找",				test_blocking_search},
-	{"开放地址法哈希/散列查找", test_open_address_hash_search},
+	{"顺序查找",					test_sequential_search},
+	{"二分查找",					test_binary_search},
+	{"分块查找",					test_blocking_search},
+	{"开放地址法哈希/散列查找",	test_open_address_hash_search},
 	{"拉链法哈希/散列查找",		test_link_hash_search},
 	{"二叉查找树查找",			test_binary_tree_search},
 	{"", NULL},
@@ -465,19 +461,21 @@ void test_btree()
 //==================================================================
 //					MAIN
 //==================================================================
+
+typedef void (*Test_Function)();
+
+Test_Function test_function[] = {
+	//test_sort,		// 测试排序算法
+	//test_search,		// 测试查找算法
+	//test_btree,		// 测试 B- 树算法
+	NULL
+};
+
 int main(int argc, const char* argv[])
 {
-#ifdef SORT_TEST
-	test_sort();
-#endif
-
-#ifdef SEARCH_TEST
-	test_search();
-#endif
-
-#ifdef BTREE_TEST
-	//test_btree();
-#endif
+	for (int i = 0; test_function[i] != NULL; i++) {
+		test_function[i]();
+	}
 
 	printf("\n测试结束\n");
 	system("pause");
