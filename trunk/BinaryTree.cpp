@@ -294,16 +294,17 @@ void BST_in_order(BSTree* tree, int* data)
     BST_in_order_impl(*tree, data, index);
 }
 
+// ºóĞò±éÀú
 void BST_post_order_impl(BSTree tree, int* data, int& index)
 {
     assert(data && tree && index >= 0);
 
     if (tree->leftChild) {
-        BST_in_order_impl(tree->leftChild, data, ++index);
+        BST_post_order_impl(tree->leftChild, data, ++index);
     }
 
     if (tree->rightChild) {
-        BST_in_order_impl(tree->rightChild, data, ++index);
+        BST_post_order_impl(tree->rightChild, data, ++index);
     }
 
     data[index] = tree->key;

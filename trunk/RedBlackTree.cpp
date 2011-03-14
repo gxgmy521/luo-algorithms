@@ -4,36 +4,80 @@
 #include <assert.h>
 
 // 最小关键字元素
-RBNode* RBTree_minimum(RBNode* x)
+RBNode* RBTree_minimum(RBNode* node)
 {
-	while (x->leftChild != &RBNode_Nil) {
-		x = x->leftChild;
+	assert(node);
+
+	RBNode* temp = node;
+	while (temp->leftChild != &RBNode_Nil) {
+		temp = temp->leftChild;
 	}
 
-	return x;
+	return temp;
 }
 
-// 前驱
-RBNode* RBTree_successor(RBNode* x)
+
+// 最大关键字元素
+RBNode* RBTree_maximum(RBNode* node)
 {
-	if (x->rightChild != &RBNode_Nil) {
-		return RBTree_minimum(x->rightChild);
+	assert(node);
+
+	RBNode* temp = node;
+	while (temp->rightChild != &RBNode_Nil) {
+		temp = temp->rightChild;
 	}
 
-	RBNode* y = x->parent;
+	return temp;
+}
 
-	while (y != &RBNode_Nil && x == y->rightChild) {
-		x = y;
-		y = y->parent;
+// 中序遍历中的前驱
+RBNode* RBTree_predecessor(RBNode* node)
+{
+	assert(node);
+
+	RBNode* child = node->leftChild;
+
+	// 没有左孩子，返回自身
+	if (child == &RBNode_Nil) {
+		return node;
 	}
 
-	return y;
+	// 只有左孩子，则左孩子是其直接前驱
+	else if (child->rightChild == &RBNode_Nil) {
+		return child->leftChild;
+	}
+
+	// 左右孩子均有，则右孩子树中最大的元素为其直接前驱
+	else {
+		return RBTree_maximum(child->rightChild);
+	}
+}
+
+// 中序遍历中的后继
+RBNode* RBTree_successor(RBNode* node)
+{
+	// 有右孩子，则右孩子树中最小的元素为其直接后继
+	if (node->rightChild != &RBNode_Nil) {
+		return RBTree_minimum(node->rightChild);
+	}
+
+	// 没有右孩子，向上找到的第一个左分支节点为其直接后继，
+	// 即 node 为其直接后继的左孩子树中的最大元素。
+	RBNode* temp = node;
+	RBNode* parent = temp->parent;
+
+	while (parent != &RBNode_Nil && temp == parent->rightChild) {
+		temp = parent;
+		parent = temp->parent;
+	}
+
+	return parent;
 }
 
 // 左旋
 //            node                        right
 //           /    \                      /     \
-//          a    right     -->         node     c  
+//          a    right     -->         node     c
 //              /     \               /    \
 //             b       c             a      b
 //
@@ -67,7 +111,7 @@ void RBTree_left_rotate(RBTree* tree, RBNode* node)
 // 右旋
 //            node                  left
 //           /    \                /    \
-//         left    c     -->      a     node  
+//         left    c     -->      a     node
 //        /     \                      /    \
 //       a       b                    b      c
 //
@@ -107,6 +151,8 @@ void RBTree_insert_fixup(RBTree* tree, RBNode* node)
 	RBNode* grand = NULL;
 
 	while (node->parent->color == RB_Red) {
+		// 根据红黑树性质，以及 node 的父亲的颜色为红色，
+		// 可以肯定 node 的祖父节点一定存在
 		grand = node->parent->parent;
 
 		// 确定叔父节点
@@ -118,8 +164,8 @@ void RBTree_insert_fixup(RBTree* tree, RBNode* node)
 		}
 
 		// case 1: 叔父节点为红色
-		//         grand(B)        new node  ->    grand(R)          
-		//         /     \                         /      \ 
+		//         grand(B)        new node  ->    grand(R)
+		//         /     \                         /      \
 		//   parent(R)    uncle(R)    -->     node(B)   uncle(B)
 		//   /     \      /  \                /   \        /  \
  		//  a    node(R) d    e          parent  node(R)  d    e
@@ -133,7 +179,7 @@ void RBTree_insert_fixup(RBTree* tree, RBNode* node)
 			node = grand;
 		}
 
-		// case 2, case 3：叔父节点为黑色	
+		// case 2, case 3：叔父节点为黑色
 		//         case 2     --->    case 3         -->  done
 		//                      parent is as new node
 		//         grand(B)          grand(B)            node(B)
@@ -168,7 +214,7 @@ void RBTree_insert_fixup(RBTree* tree, RBNode* node)
 void RBTree_insert(RBTree* tree, RBNode* node)
 {
 	assert(tree && node);
-	
+
 	RBNode* parent = &RBNode_Nil;
 	RBNode* temp = *tree;
 
@@ -207,52 +253,102 @@ void RBTree_insert(RBTree* tree, RBNode* node)
 }
 
 // 删除调整
-void RBTree_delete_fixup(RBTree* tree, RBNode* x)
+void RBTree_delete_fixup(RBTree* tree, RBNode* node)
 {
+	RBNode* brother = NULL;
 
+	while (node != *tree && node->color == RB_Black) {
+		// 确定兄弟节点
+		if (node == node->parent->leftChild) {
+			brother = node->parent->rightChild;
+		}
+		else {
+			brother = node->parent->leftChild;
+		}
+
+		// case 1: 兄弟节点为红色
+		if (brother->color == RB_Red) {
+			brother->color = RB_Black;
+			node->parent->color = RB_Red;
+
+			RBTree_left_rotate(tree, node->parent);
+
+			brother = node->parent->rightChild;
+		}
+
+		// case 2: 兄弟节点的两孩子均为黑色
+		if (brother->leftChild->color == RB_Black
+			&& brother->rightChild->color == RB_Black) {
+				brother->color = RB_Red;
+				node = node->parent;
+		}
+
+		else {
+			// case 3: 兄弟节点的左孩子为红色，右孩子为黑色
+			if (brother->rightChild->color == RB_Black) {
+				brother->leftChild->color = RB_Black;
+				brother->color = RB_Red;
+
+				RBTree_right_rotate(tree, brother);
+
+				brother = node->parent->rightChild;
+			}
+
+			// case 4:兄弟节点的右孩子为红色
+			brother->color = node->parent->color;
+			node->parent->color = RB_Black;
+			brother->rightChild->color = RB_Black;
+
+			RBTree_left_rotate(tree, node->parent);
+
+			node = *tree;
+		}
+	}
+
+	node->color = RB_Black;
 }
 
 // 删除
-RBNode* RBTree_delete(RBTree* tree, RBNode* z)
+RBNode* RBTree_delete(RBTree* tree, RBNode* node)
 {
-	RBNode* x = NULL;
-	RBNode* y = NULL;
+	RBNode* successor = NULL;
+	RBNode* temp = NULL;
 
-	if (z->leftChild == &RBNode_Nil || z->rightChild == &RBNode_Nil) {
-		y = z;
+	if (node->leftChild == &RBNode_Nil || node->rightChild == &RBNode_Nil) {
+		successor = node;
 	}
 	else {
-		y = RBTree_successor(z);
+		successor = RBTree_successor(node);
 	}
 
-	if (y->leftChild != &RBNode_Nil) {
-		x = y->leftChild;
+	if (successor->leftChild != &RBNode_Nil) {
+		temp = successor->leftChild;
 	}
 	else {
-		x = y->rightChild;
+		temp = successor->rightChild;
 	}
 
-	x->parent = y->parent;
+	temp->parent = successor->parent;
 
-	if (y->parent == &RBNode_Nil) {
-		*tree = x;
+	if (successor->parent == &RBNode_Nil) {
+		*tree = temp;
 	}
 	else {
-		if (y == y->parent->leftChild) {
-			y->parent->leftChild = x;
+		if (successor == successor->parent->leftChild) {
+			successor->parent->leftChild = temp;
 		}
 		else {
-			y->parent->rightChild = x;
+			successor->parent->rightChild = temp;
 		}
 	}
 
-	if (y != z) {
-		z->key = y->key;
+	if (successor != node) {
+		node->key = successor->key;
 	}
 
-	if (y->color == RB_Black) {
-		RBTree_delete_fixup(tree, x);
+	if (successor->color == RB_Black) {
+		RBTree_delete_fixup(tree, temp);
 	}
 
-	return y;
+	return successor;
 }

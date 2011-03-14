@@ -19,11 +19,18 @@ typedef RBNode* RBTree;
 
 static RBNode RBNode_Nil = {RB_Black, 0, 0, 0, 0};
 
-// 最小关键字元素
-RBNode* RBTree_minimum(RBNode* x);
 
-// 前驱
-RBNode* RBTree_successor(RBNode* x);
+// 最小关键字元素
+RBNode* RBTree_minimum(RBNode* node);
+
+// 最大关键字元素
+RBNode* RBTree_maximum(RBNode* node);
+
+// 中序遍历中的前驱
+RBNode* RBTree_predecessor(RBNode* node);
+
+// 中序遍历中的后继
+RBNode* RBTree_successor(RBNode* node);
 
 void RBTree_insert(RBTree* tree, RBNode* node);
 
