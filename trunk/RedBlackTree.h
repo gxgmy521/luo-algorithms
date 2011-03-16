@@ -17,8 +17,7 @@ struct RBNode
 
 typedef RBNode* RBTree;
 
-static RBNode RBNode_Nil = {RB_Black, 0, 0, 0, 0};
-
+RBNode* RBTree_nil();
 
 // 最小关键字元素
 RBNode* RBTree_minimum(RBNode* node);
@@ -35,5 +34,7 @@ RBNode* RBTree_successor(RBNode* node);
 void RBTree_insert(RBTree* tree, RBNode* node);
 
 RBNode* RBTree_delete(RBTree* tree, RBNode* node);
+
+void RBTree_print(RBTree tree, int her = 1);
 
 #endif	// __RED_BLACK_TREE_H__
