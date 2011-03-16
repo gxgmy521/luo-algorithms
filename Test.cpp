@@ -7,6 +7,7 @@
 #include "SearchAlgorithms.h"
 #include "BinaryTree.h"
 #include "BTree.h"
+#include "RedBlackTree.h"
 
 //==================================================================
 //					π§æﬂ∫Ø ˝
@@ -459,6 +460,35 @@ void test_btree()
 }
 
 //==================================================================
+//					≤‚ ‘∫Ï∫⁄ ˜
+//==================================================================
+void test_redblacktree()
+{
+	const int length = 10;
+	int array[length] = {
+		'G', 'M', 'P', 'X', 'A', 'C', 'D', 'E', 'J', 'K',
+		//'N', 'O', 'R', 'S', 'T', 'U', 'V', 'Y', 'Z', 'F'
+	};
+
+	int i;
+	RBTree tree = RBTree_nil();
+	RBNode* node = NULL;
+
+	for (i = 0; i < length; i++) {
+		node = (RBNode*)malloc(sizeof(RBNode));
+		node->key = array[i];
+		node->color = RB_Red;
+		node->parent = RBTree_nil();
+		node->leftChild = RBTree_nil();
+		node->rightChild = RBTree_nil();
+
+		RBTree_insert(&tree, node);	
+	}
+
+	RBTree_print(tree);
+}
+
+//==================================================================
 //					MAIN
 //==================================================================
 
@@ -467,7 +497,8 @@ typedef void (*Test_Function)();
 Test_Function test_function[] = {
 	//test_sort,		// ≤‚ ‘≈≈–ÚÀ„∑®
 	//test_search,		// ≤‚ ‘≤È’“À„∑®
-	//test_btree,		// ≤‚ ‘ B-  ˜À„∑®
+	//test_btree,		// ≤‚ ‘ B-  ˜
+	test_redblacktree,	// ≤‚ ‘∫Ï∫⁄ ˜
 	NULL
 };
 

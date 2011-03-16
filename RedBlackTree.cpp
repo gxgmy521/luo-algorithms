@@ -3,6 +3,36 @@
 #include <stdio.h>
 #include <assert.h>
 
+static RBNode RBNode_Nil = {RB_Black, 0, 0, 0, 0};
+
+RBNode* RBTree_nil()
+{
+	return &RBNode_Nil;
+}
+
+void RBTree_print(RBTree tree, int her)
+{
+	int i;
+	RBNode* node = tree;
+
+	assert(node);
+
+	if (node != &RBNode_Nil) {
+		for (i = 0; i < her; i++) {
+			printf(" ");
+		}
+		printf("第 %d 层， %c\n", her, node->key);
+
+		if (node->leftChild != &RBNode_Nil) {
+			RBTree_print(node->leftChild, her + 1);
+		}
+
+		if (node->rightChild != &RBNode_Nil) {
+			RBTree_print(node->rightChild, her + 1);
+		}
+	}
+}
+
 // 最小关键字元素
 RBNode* RBTree_minimum(RBNode* node)
 {
