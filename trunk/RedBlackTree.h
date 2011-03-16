@@ -35,6 +35,8 @@ void RBTree_insert(RBTree* tree, RBNode* node);
 
 RBNode* RBTree_delete(RBTree* tree, RBNode* node);
 
+RBNode* RBTree_search(const RBTree tree, int key);
+
 void RBTree_print(RBTree tree, int her = 1);
 
 #endif	// __RED_BLACK_TREE_H__
