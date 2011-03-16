@@ -14,9 +14,10 @@ This project is about algorithms, such as sort, search, tree, A-Star, etc.
  # Shell sort
  # Bubble sort
  # Quick sort
- # Select sort
+ # Selection sort
  # Heap sort
  # Merge sort
+ # Counting sort
  # Bucket sort
  # Radix sort
 
@@ -30,6 +31,7 @@ This project is about algorithms, such as sort, search, tree, A-Star, etc.
 * Tree
  # Binary search tree
  # B-Tree
+ # Red Black Tree
 
 =============================================================
 
@@ -50,6 +52,7 @@ This project is about algorithms, such as sort, search, tree, A-Star, etc.
  # 选择排序
  # 堆排序
  # 归并排序
+ # 计数排序
  # 桶/箱排序
  # 基数排序
 
@@ -63,3 +66,4 @@ This project is about algorithms, such as sort, search, tree, A-Star, etc.
 *  树
  # 二叉查找树
  # B- 树
+ # 红黑树
