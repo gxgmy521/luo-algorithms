@@ -462,18 +462,31 @@ void test_btree()
 //==================================================================
 //					测试红黑树
 //==================================================================
+void test_redblacktree_delete(RBTree* tree, int key)
+{
+	RBNode* node = RBTree_search(*tree, key);
+	assert(node != RBTree_nil());
+
+	printf("\n删除节点 %d \n", node->key);
+	
+	node = RBTree_delete(tree, node);
+	free(node);
+	
+	RBTree_print(*tree);
+}
+
 void test_redblacktree()
 {
-	const int length = 10;
+	const int length = 14;
 	int array[length] = {
-		'G', 'M', 'P', 'X', 'A', 'C', 'D', 'E', 'J', 'K',
-		//'N', 'O', 'R', 'S', 'T', 'U', 'V', 'Y', 'Z', 'F'
+		2, 3, 4, 6, 7, 11, 9, 18, 12, 14, 19, 17, 22, 20
 	};
 
 	int i;
 	RBTree tree = RBTree_nil();
 	RBNode* node = NULL;
 
+	// 插入节点生成树
 	for (i = 0; i < length; i++) {
 		node = (RBNode*)malloc(sizeof(RBNode));
 		node->key = array[i];
@@ -486,6 +499,63 @@ void test_redblacktree()
 	}
 
 	RBTree_print(tree);
+
+	// 插入测试
+	node = (RBNode*)malloc(sizeof(RBNode));
+	node->key = 21;
+
+	printf("\n插入节点 %d\n", node->key);
+
+	RBTree_insert(&tree, node);
+	RBTree_print(tree);
+
+	// 查找测试
+	i = 6;
+	node = RBTree_search(tree, i);
+
+	if (node != RBTree_nil()) {
+		printf("\n在红黑树中找到节点 %d\n", node->key);
+	}
+	else {
+		printf("\n在红黑树中找不到节点 %d\n", i);
+	}
+
+	// 删除测试
+	// 
+	i = 4;// 取值 1, 2, 3, 4，分别对应 case 1, 2, 3, 4
+
+	switch (i)
+	{
+	case 1:	// 兄弟为红色
+		test_redblacktree_delete(&tree, 3);
+		break;
+
+	case 2:	// 兄弟为黑色，且兄弟的两孩子均为黑色
+		test_redblacktree_delete(&tree, 12);
+		break;
+
+	case 3:	// 兄弟为黑色，且兄弟的左孩子为红色，右孩子均为黑色
+		test_redblacktree_delete(&tree, 19);
+		break;
+
+	case 4:	// 兄弟为黑色，且兄弟的右孩子为红色
+		test_redblacktree_delete(&tree, 9);
+		break;
+	}
+
+	// 删除树
+	for (i = 0; i < length; i++) {
+		node = RBTree_search(tree, array[i]);
+
+		if (node != RBTree_nil()) {
+			node = RBTree_delete(&tree, node);
+			free(node);
+		}
+	}
+
+	assert(tree->leftChild == RBTree_nil()
+		&& tree->rightChild == RBTree_nil()
+		&& tree->parent == RBTree_nil());
 }
 
 //==================================================================

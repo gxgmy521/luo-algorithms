@@ -21,7 +21,8 @@ void RBTree_print(RBTree tree, int her)
 		for (i = 0; i < her; i++) {
 			printf(" ");
 		}
-		printf("第 %d 层， %c\n", her, node->key);
+		printf("第 %d 层， %d(%c)\n",
+			her, node->key, node->color == RB_Black ? 'B' : 'R');
 
 		if (node->leftChild != &RBNode_Nil) {
 			RBTree_print(node->leftChild, her + 1);
@@ -104,6 +105,26 @@ RBNode* RBTree_successor(RBNode* node)
 	return parent;
 }
 
+RBNode* RBTree_search(const RBTree tree, int key)
+{
+	RBNode* node = tree;
+
+	while (node != &RBNode_Nil) {
+		if (node->key == key) {
+			return node;
+		}
+
+		else if (node->key < key) {
+			node = node->rightChild;
+		}
+		else {
+			node = node->leftChild;
+		}
+	}
+
+	return &RBNode_Nil;
+}
+
 // 左旋
 //            node                        right
 //           /    \                      /     \
@@ -177,62 +198,92 @@ void RBTree_insert_fixup(RBTree* tree, RBNode* node)
 {
 	assert(tree && node);
 
+	RBNode* parent = NULL;
 	RBNode* uncle = NULL;
 	RBNode* grand = NULL;
+	RBNode* temp = NULL;
 
-	while (node->parent->color == RB_Red) {
+	parent = node->parent;
+	while (parent->color == RB_Red) {
 		// 根据红黑树性质，以及 node 的父亲的颜色为红色，
 		// 可以肯定 node 的祖父节点一定存在
-		grand = node->parent->parent;
+		grand = parent->parent;
 
 		// 确定叔父节点
-		if (node->parent == grand->leftChild) {
+		if (parent == grand->leftChild) {
 			uncle = grand->rightChild;
-		}
-		else {
-			uncle = grand->rightChild;
-		}
 
-		// case 1: 叔父节点为红色
-		//         grand(B)        new node  ->    grand(R)
-		//         /     \                         /      \
-		//   parent(R)    uncle(R)    -->     node(B)   uncle(B)
-		//   /     \      /  \                /   \        /  \
- 		//  a    node(R) d    e          parent  node(R)  d    e
-		//       /   \                          /   \
-		//      b     c                        b     c
-		//
-		if (uncle->color == RB_Red) {
-			node->parent->color = RB_Black;
-			uncle->color = RB_Black;
-			grand->color = RB_Red;
-			node = grand;
-		}
-
-		// case 2, case 3：叔父节点为黑色
-		//         case 2     --->    case 3         -->  done
-		//                      parent is as new node
-		//         grand(B)          grand(B)            node(B)
-		//         /     \           /      \           /      \
- 		//   parent(R)    d       node(R)   d      parent(R)  grand(R)
-		//   /     \               /     \           /  \      /   \
-		//  a    node(R)      parent(R)   c         a    b    c     d
- 		//       /   \         /  \
-		//      b     c       a    b
-		//
-		else {
-			// 将 case 2 装换成 case 3
-			if (node->parent->rightChild == node) {
-				node = node->parent;
-
-				RBTree_left_rotate(tree, node);
+			// case 1: 叔父节点为红色
+			//         grand(B)        new node  ->    grand(R)
+			//         /     \                         /      \
+			//   parent(R)    uncle(R)    -->     node(B)   uncle(B)
+			//   /     \      /  \                /   \        /  \
+ 			//  a    node(R) d    e          parent  node(R)  d    e
+			//       /   \                          /   \
+			//      b     c                        b     c
+			//
+			if (uncle->color == RB_Red) {
+				parent->color = RB_Black;
+				uncle->color = RB_Black;
+				grand->color = RB_Red;
+				node = grand;
+				parent = node->parent;
 			}
 
-			// case 3
-			node->parent->color = RB_Black;
-			node->parent->parent->color = RB_Red;
+			// case 2, case 3：叔父节点为黑色
+			//         case 2     --->    case 3         -->  done
+			//                      parent is as new node
+			//         grand(B)          grand(B)            node(B)
+			//         /     \           /      \           /      \
+ 			//   parent(R)    d       node(R)   d      parent(R)  grand(R)
+			//   /     \               /     \           /  \      /   \
+			//  a    node(R)      parent(R)   c         a    b    c     d
+ 			//       /   \         /  \
+			//      b     c       a    b
+			//
+			else {
+				// 将 case 2 装换成 case 3
+				if (parent->rightChild == node) {
+					RBTree_left_rotate(tree, parent);
+					temp = parent;
+					parent = node;
+					node = temp;
+				}
 
-			RBTree_right_rotate(tree, node->parent->parent);
+				// case 3
+				parent->color = RB_Black;
+				grand->color = RB_Red;
+
+				RBTree_right_rotate(tree, grand);
+			}
+		}
+		else {
+			// 与上面的情况对称
+			uncle = grand->leftChild;
+
+			if (uncle->color == RB_Red) {
+				parent->color = RB_Black;
+				uncle->color = RB_Black;
+				grand->color = RB_Red;
+				node = grand;
+				parent = node->parent;
+			}
+
+			else {
+				// 将 case 2 装换成 case 3
+				if (parent->leftChild == node) {
+					RBTree_right_rotate(tree, parent);
+					temp = parent;
+					parent = node;
+					node = temp;
+				}
+
+				// case 3
+				parent->color = RB_Black;
+				grand->color = RB_Red;
+
+				RBTree_left_rotate(tree, grand);
+			}
 		}
 	}
 
@@ -286,52 +337,93 @@ void RBTree_insert(RBTree* tree, RBNode* node)
 void RBTree_delete_fixup(RBTree* tree, RBNode* node)
 {
 	RBNode* brother = NULL;
+	RBNode* parent = NULL;
 
 	while (node != *tree && node->color == RB_Black) {
+		parent = node->parent;
+
 		// 确定兄弟节点
-		if (node == node->parent->leftChild) {
-			brother = node->parent->rightChild;
-		}
-		else {
-			brother = node->parent->leftChild;
-		}
+		if (node == parent->leftChild) {
+			brother = parent->rightChild;
 
-		// case 1: 兄弟节点为红色
-		if (brother->color == RB_Red) {
-			brother->color = RB_Black;
-			node->parent->color = RB_Red;
+			// case 1: 兄弟节点为红色
+			if (brother->color == RB_Red) {
+				brother->color = RB_Black;
+				parent->color = RB_Red;
 
-			RBTree_left_rotate(tree, node->parent);
-
-			brother = node->parent->rightChild;
-		}
-
-		// case 2: 兄弟节点的两孩子均为黑色
-		if (brother->leftChild->color == RB_Black
-			&& brother->rightChild->color == RB_Black) {
-				brother->color = RB_Red;
-				node = node->parent;
-		}
-
-		else {
-			// case 3: 兄弟节点的左孩子为红色，右孩子为黑色
-			if (brother->rightChild->color == RB_Black) {
-				brother->leftChild->color = RB_Black;
-				brother->color = RB_Red;
-
-				RBTree_right_rotate(tree, brother);
+				RBTree_left_rotate(tree, parent);
 
 				brother = node->parent->rightChild;
 			}
 
-			// case 4:兄弟节点的右孩子为红色
-			brother->color = node->parent->color;
-			node->parent->color = RB_Black;
-			brother->rightChild->color = RB_Black;
+			// case 2: 兄弟节点的两孩子均为黑色
+			if (brother->leftChild->color == RB_Black
+				&& brother->rightChild->color == RB_Black) {
+					brother->color = RB_Red;
+					node = parent;
+			}
 
-			RBTree_left_rotate(tree, node->parent);
+			else {
+				// case 3: 兄弟节点的左孩子为红色，右孩子为黑色
+				if (brother->rightChild->color == RB_Black) {
+					brother->leftChild->color = RB_Black;
+					brother->color = RB_Red;
 
-			node = *tree;
+					RBTree_right_rotate(tree, brother);
+
+					brother = node->parent->rightChild;
+				}
+
+				// case 4:兄弟节点的右孩子为红色
+				brother->color = parent->color;
+				parent->color = RB_Black;
+				brother->rightChild->color = RB_Black;
+
+				RBTree_left_rotate(tree, parent);
+
+				node = *tree;
+			}
+		}
+		else {
+			brother = node->parent->leftChild;
+
+			// case 1: 兄弟节点为红色
+			if (brother->color == RB_Red) {
+				brother->color = RB_Black;
+				parent->color = RB_Red;
+
+				RBTree_right_rotate(tree, parent);
+
+				brother = node->parent->leftChild;
+			}
+
+			// case 2: 兄弟节点的两孩子均为黑色
+			if (brother->leftChild->color == RB_Black
+				&& brother->rightChild->color == RB_Black) {
+					brother->color = RB_Red;
+					node = parent;
+			}
+
+			else {
+				// case 3: 兄弟节点的左孩子为红色，右孩子为黑色
+				if (brother->rightChild->color == RB_Black) {
+					brother->leftChild->color = RB_Black;
+					brother->color = RB_Red;
+
+					RBTree_left_rotate(tree, brother);
+
+					brother = node->parent->rightChild;
+				}
+
+				// case 4:兄弟节点的右孩子为红色
+				brother->color = parent->color;
+				parent->color = RB_Black;
+				brother->leftChild->color = RB_Black;
+
+				RBTree_right_rotate(tree, parent);
+
+				node = *tree;
+			}
 		}
 	}
 
