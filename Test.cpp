@@ -543,19 +543,20 @@ void test_redblacktree()
 		break;
 	}
 
+	test_redblacktree_delete(&tree, 21);
+
 	// É¾³ýÊ÷
 	for (i = 0; i < length; i++) {
 		node = RBTree_search(tree, array[i]);
 
 		if (node != RBTree_nil()) {
+			printf("É¾³ý %d\n", node->key);
 			node = RBTree_delete(&tree, node);
 			free(node);
 		}
 	}
 
-	assert(tree->leftChild == RBTree_nil()
-		&& tree->rightChild == RBTree_nil()
-		&& tree->parent == RBTree_nil());
+	assert(tree == RBTree_nil());
 }
 
 //==================================================================
