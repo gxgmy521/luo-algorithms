@@ -243,6 +243,8 @@ void RBTree_insert_fixup(RBTree* tree, RBNode* node)
 			//
 			else {
 				// 将 case 2 装换成 case 3
+				// 注意：转换到 case 3之后， parent 为case 2中的 node，
+				// node 为 case 2 中的 parent
 				if (parent->rightChild == node) {
 					RBTree_left_rotate(tree, parent);
 					temp = parent;
@@ -385,7 +387,7 @@ void RBTree_delete_fixup(RBTree* tree, RBNode* node)
 			}
 		}
 		else {
-			brother = node->parent->leftChild;
+			brother = parent->leftChild;
 
 			// case 1: 兄弟节点为红色
 			if (brother->color == RB_Red) {
@@ -394,7 +396,7 @@ void RBTree_delete_fixup(RBTree* tree, RBNode* node)
 
 				RBTree_right_rotate(tree, parent);
 
-				brother = node->parent->leftChild;
+				brother = parent->leftChild;
 			}
 
 			// case 2: 兄弟节点的两孩子均为黑色
@@ -412,7 +414,7 @@ void RBTree_delete_fixup(RBTree* tree, RBNode* node)
 
 					RBTree_left_rotate(tree, brother);
 
-					brother = node->parent->rightChild;
+					brother = parent->rightChild;
 				}
 
 				// case 4:兄弟节点的右孩子为红色
