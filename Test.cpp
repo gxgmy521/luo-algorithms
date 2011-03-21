@@ -353,7 +353,7 @@ void test_binary_tree_search()
 }
 
 //==================================================================
-//					²âÊÔ B- Ê÷
+//					²âÊÔ B Ê÷
 //==================================================================
 void test_BTree_search(BTree tree, int key)
 {
@@ -394,7 +394,7 @@ void test_btree()
 	// ´´½¨
 	BTree_create(&tree, array, length);
 
-	printf("\n=== ´´½¨ B- Ê÷ ===\n");
+	printf("\n=== ´´½¨ B Ê÷ ===\n");
 	BTree_print(tree);
 	printf("\n");
 
@@ -568,7 +568,7 @@ typedef void (*Test_Function)();
 Test_Function test_function[] = {
 	//test_sort,		// ²âÊÔÅÅĞòËã·¨
 	//test_search,		// ²âÊÔ²éÕÒËã·¨
-	//test_btree,		// ²âÊÔ B- Ê÷
+	//test_btree,			// ²âÊÔ B Ê÷
 	test_redblacktree,	// ²âÊÔºìºÚÊ÷
 	NULL
 };
