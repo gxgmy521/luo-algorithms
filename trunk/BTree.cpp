@@ -7,7 +7,7 @@
 
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-#define DEBUG_TREE
+//#define DEBUG_TREE
 
 #ifdef DEBUG_TREE
 #define debug_print(fmt,...) printf(fmt, ## __VA_ARGS__)
@@ -15,16 +15,19 @@
 #define debug_print(fmt,...)
 #endif
 
+// 模拟向磁盘写入节点
 void disk_write(BTNode* node)
 {
 	printf("向磁盘写入节点\n");
 }
 
+// 模拟从磁盘读取节点
 void disk_read(BTNode** node)
 {
 	printf("从磁盘读取节点\n");
 }
 
+// 按层次打印 B 树
 void BTree_print(BTree tree, int her)
 {
 	int i;
@@ -51,6 +54,7 @@ void BTree_print(BTree tree, int her)
 	}
 }
 
+// 将非满的节点与其第 index 个满孩子节点合并
 // parent 是一个非满的父节点
 // node 是 tree 孩子表中下标为 index 的孩子节点，且是满的
 void BTree_split_child(BTNode* parent, int index, BTNode* node)
