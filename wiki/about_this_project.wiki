@@ -30,7 +30,7 @@ This project is about algorithms, such as sort, search, tree, A-Star, etc.
 
 * Tree
  # Binary search tree
- # B-Tree
+ # B Tree
  # Red Black Tree
 
 =============================================================
@@ -65,5 +65,5 @@ This project is about algorithms, such as sort, search, tree, A-Star, etc.
 
 *  树
  # 二叉查找树
- # B- 树
+ # B 树
  # 红黑树
